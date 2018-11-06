@@ -37,12 +37,24 @@ class Nav:
     def return_halite_to_shipyard(ship, me, game_map):
         myglobals.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) +
                               " **returning to shipyard** at " + str(me.shipyard.position))
-        if myglobals.Variables.current_assignments[ship.id].primary_mission != myglobals.Missions.dropoff:
-            myglobals.Variables.current_assignments[ship.id].primary_mission = myglobals.Missions.dropoff
-            myglobals.Variables.current_assignments[ship.id].secondary_mission = None
-            myglobals.Variables.current_assignments[ship.id].destination = me.shipyard.position
 
-        return ship.move(game_map.naive_navigate(ship, me.shipyard.position))
+        myglobals.Variables.current_assignments[ship.id].primary_mission = myglobals.Missions.dropoff
+        myglobals.Variables.current_assignments[ship.id].secondary_mission = myglobals.Missions.in_transit
+        myglobals.Variables.current_assignments[ship.id].destination = me.shipyard.position
+
+        return ship.move(game_map.naive_navigate(ship, myglobals.Variables.current_assignments[ship.id].destination))
+
+    @staticmethod
+    def less_dumb_move(ship, direction, game_map):
+        next_dest = game_map[ship.position.directional_offset(direction)].position
+        if next_dest.is_empty:
+            myglobals.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " one step at a time...")
+            return ship.move(direction)
+        else:
+            # I guess we'll just wait for now
+            myglobals.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " avoiding collision at " +
+                                  str(ship.position))
+            return ship.stay_still()
 
 
 class StartUp:

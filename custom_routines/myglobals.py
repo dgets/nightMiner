@@ -12,6 +12,9 @@ from enum import Enum
 
 
 class Const:
+    """
+    global constants
+    """
     DEBUGGING = {
         'core': True,
         'seek': True,
@@ -25,10 +28,17 @@ class Const:
 
 
 class Variables:
-    current_assignments = { }
+    """
+    global variables
+    """
+
+    current_assignments = { }   # contains { id: ShipHistory }
 
 
 class Missions(Enum):
+    """
+    global mission assignment categories
+    """
     in_transit = 1
     mining = 2
     dropoff = 3
