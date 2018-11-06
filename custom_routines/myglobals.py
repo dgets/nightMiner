@@ -35,6 +35,7 @@ class Missions(Enum):
     get_distance = 4
     defense = 5
     offense = 6
+    busy = 7
 
 
 class Misc:
