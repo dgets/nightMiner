@@ -21,6 +21,7 @@ class Const:
     }
 
     Enough_Ore_To_Spawn = 2000
+    Initial_Scoot_Distance = 5
 
 
 class Variables:
