@@ -46,7 +46,7 @@ class Nav:
 
     @staticmethod
     def less_dumb_move(ship, direction, game_map):
-        next_dest = game_map[ship.position.directional_offset(direction)].position
+        next_dest = game_map[ship.position.directional_offset(direction)]
         if next_dest.is_empty:
             myglobals.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " one step at a time...")
             return ship.move(direction)

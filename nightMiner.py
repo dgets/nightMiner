@@ -60,8 +60,9 @@ while True:
                     myglobals.Variables.current_assignments[ship.id].destination = \
                         ship.position.directional_offset(rnd_dir)
                     
-                    command_queue.append(ship.move(random.choice([Direction.North, Direction.South, Direction.East,
-                                                                  Direction.West])))
+                    #command_queue.append(ship.move(random.choice([Direction.North, Direction.South, Direction.East,
+                    #                                              Direction.West])))
+                    command_queue.append(seek_n_nav.Nav.less_dumb_move(ship, myglobals.Misc.r_dir_choice(), game_map))
                     continue
 
                 elif myglobals.Variables.current_assignments[ship.id].secondary_mission == \

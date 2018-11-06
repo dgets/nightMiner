@@ -8,8 +8,10 @@ Holds debugging and other constant values
 """
 
 import logging
+import random
 from enum import Enum
 
+from hlt import Direction
 
 class Const:
     """
@@ -74,3 +76,14 @@ class Misc:
                 raise RuntimeError("Log level specified is not implemented in myglobals.Misc.loggit()")
 
         return
+
+    @staticmethod
+    def r_dir_choice():
+        """
+        just returns one of the 4 cardinal directions at random(-ish); this is
+        really just more of a wrapper to save typing than anything
+
+        :return: Direction
+        """
+
+        return random.choice([Direction.North, Direction.South, Direction.East, Direction.West])
