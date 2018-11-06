@@ -40,8 +40,6 @@ while True:
     me = game.me
 
     myglobals.Misc.loggit('core', 'info', " - updating 'game_map'")
-    # speed, again (see if there are any places to implement anything like
-    # this with my own structs)
     game_map = game.game_map
 
     myglobals.Misc.loggit('core', 'info', " - initializing 'command_queue'")
@@ -50,10 +48,11 @@ while True:
     myglobals.Misc.loggit('core', 'debug', " -* me.get_ships() dump: " + str(me.get_ships()))
 
     for ship in me.get_ships():
+        myglobals.Misc.loggit('core', 'debug', " - ship.id: " + str(ship.id))
         try:
             if myglobals.Variables.current_assignments[ship.id].primary_mission == 'mining':
                 # if this is a new ship, we'll be in except, below
-                if turn <= (myglobals.Variables.current_assignments[ship.id].turnstamp + 5):  # wander moar
+                if turn > (myglobals.Variables.current_assignments[ship.id].turnstamp + 5):  # wander moar
                     command_queue.append(ship.move(random.choice([Direction.North, Direction.South, Direction.East,
                                                                   Direction.West])))
                     continue
@@ -77,6 +76,5 @@ while True:
                 (not game_map[me.shipyard].is_occupied):
             command_queue.append(me.shipyard.spawn())
 
-        turn += 1
-
-        game.end_turn(command_queue)
+    turn += 1
+    game.end_turn(command_queue)
