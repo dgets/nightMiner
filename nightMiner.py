@@ -85,7 +85,7 @@ while True:
                     continue
 
                 elif game_map.normalize(myglobals.Variables.current_assignments[ship.id].destination) == ship.position \
-                  and not ship.is_full:
+                        and not ship.is_full:
                     # mine
                     myglobals.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **mining** @ " +
                                           str(ship.position))
@@ -96,37 +96,14 @@ while True:
                     command_queue.append(ship.stay_still())
                     continue
 
-                #elif game_map(ship.position).halite_amount == 0 and not ship.is_full:
-                #    myglobals.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **wandering** a step to " +
-                #                          "find more halite")
-                #    command_queue.append(ship.move(random.choice([Direction.North, Direction.South, Direction.East,
-                #                                                  Direction.West])))
-                #    continue
-
                 else:
-                    # drop off the halite; TODO: update status of ship in history here
-                    myglobals.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) +
-                                          " **returning to shipyard** at " + str(me.shipyard.position))
-                    command_queue.append(ship.move(game_map.naive_navigate(ship, me.shipyard.position)))
-                    #command_queue.append(ship.move(random.choice([Direction.North, Direction.South, Direction.East,
-                    #                                              Direction.West])))
+                    # drop off the halite
+                    command_queue.append(seek_n_nav.Nav.return_halite_to_shipyard(ship, me, game_map))
                     continue
 
         except KeyError as ke:
             # set everybody to mining, first of all
-            myglobals.Misc.loggit('core', 'debug', " - fell into except; **setting new ship id: " + str(ship.id) +
-                                  " to mining**")
-            myglobals.Misc.loggit('core', 'debug', " -* ke: " + str(ke))
-
-            myglobals.Variables.current_assignments[ship.id] = history.ShipHistory(ship.id, ship.position,
-                                                                                   seek_n_nav.Nav.
-                                                                                   generate_random_offset(
-                                                                                       ship.position
-                                                                                   ), turn,
-                                                                                   myglobals.Missions.mining,
-                                                                                   myglobals.Missions.in_transit)
-            command_queue.append(ship.move(random.choice([Direction.North, Direction.South, Direction.East,
-                                                          Direction.West])))
+            command_queue.append(seek_n_nav.StartUp.get_initial_minimum_distance(ship, turn, ke))
 
         myglobals.Misc.loggit('core', 'debug', " - found and processed ship: " + str(ship.id))
 

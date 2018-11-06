@@ -7,8 +7,6 @@ This is going to replace what was going on in state_save.py in d4m0Turtle
 previously
 """
 
-from enum import Enum
-
 from . import myglobals
 
 
@@ -16,8 +14,6 @@ class ShipHistory:
     """
     This will just save the ship's particular state, at least for a
     certain number of turns, before updating.
-
-
     """
 
     id = -1             # will be rational after init
