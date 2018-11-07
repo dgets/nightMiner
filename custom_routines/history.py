@@ -63,3 +63,24 @@ class ShipHistory:
         return "ship ID: " + str(self.id) + ", location: " + str(self.location) + ", destination: " \
                + str(self.destination) + ", turnstamp set: " + str(self.turnstamp) + ", current_mission: " + \
                self.current_mission + ", primary_mission: " + self.primary_mission
+
+    @staticmethod
+    def prune_current_assignments(me):
+        # see if we've got any dead ships still recorded
+
+        for ship_history in myglobals.Variables.current_assignments.keys():
+            myglobals.Misc.loggit('core', 'info', " - pruning current_assignments, if necessary")
+
+            success = False
+            for tmp_ship in me.get_ships():  # yeah, yeah, I _SO_ know that there's a better way to do this :| frazzled
+                myglobals.Misc.loggit('core', 'debug', " -** tmp_ship dump: " + str(tmp_ship))
+                myglobals.Misc.loggit('core', 'debug', " -** ship_history dump: " + str(ship_history))
+
+                if tmp_ship.id == ship_history:
+                    success = True
+
+            if not success:
+                # wipe the entry
+                myglobals.Misc.loggit('core', 'debug', " - wiping ship.id " + str(ship_history) + " from " +
+                                      " current_assignments due to its demise.")
+                myglobals.Variables.current_assignments.pop(ship_history, None)

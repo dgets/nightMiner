@@ -49,6 +49,8 @@ while True:
     for ship in me.get_ships():
         myglobals.Misc.loggit('core', 'info', " - processing ship.id: " + str(ship.id))
         try:
+            #if myglobals.Variables.current_assignments[ship.id].primary_mission == myglobals.Missions.dropoff and \
+            #
             if myglobals.Variables.current_assignments[ship.id].primary_mission == myglobals.Missions.mining:
                 # if this is a new ship, we'll be in except, below
                 if myglobals.Variables.current_assignments[ship.id].secondary_mission == myglobals.Missions.busy and \
@@ -69,59 +71,61 @@ while True:
                         myglobals.Missions.in_transit \
                         and myglobals.Variables.current_assignments[ship.id].destination != ship.position:
                     # continuing transit for this ship to its final destination
-                    myglobals.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **scooting**")
+                    myglobals.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **scooting** to " +
+                                          str(myglobals.Variables.current_assignments[ship.id].destination))
 
                     command_queue.append(ship.move(game_map.naive_navigate(ship,
                                                                            myglobals.Variables.
                                                                            current_assignments[ship.id].destination)))
                     continue
 
-                elif myglobals.Variables.current_assignments[ship.id].secondary_mission == \
-                        myglobals.Missions.in_transit \
-                        and myglobals.Variables.current_assignments[ship.id].primary_mission == \
-                        myglobals.Missions.dropoff and \
-                        myglobals.Variables.current_assignments[ship.id].destination == ship.position and \
-                        ship.halite_amount > 0:
-                    # make the dropoff
-                    myglobals.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " making dropoff @ " +
-                                          str(ship.position))
+            elif myglobals.Variables.current_assignments[ship.id].secondary_mission == \
+                    myglobals.Missions.in_transit \
+                    and myglobals.Variables.current_assignments[ship.id].primary_mission == \
+                    myglobals.Missions.dropoff and \
+                    myglobals.Variables.current_assignments[ship.id].destination == ship.position and \
+                    ship.halite_amount > 0:
+                # make the dropoff
+                myglobals.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " making dropoff @ " +
+                                      str(ship.position))
 
-                    command_queue.append(ship.make_dropoff())
-                    # now we've got to wipe that from the current_assignments
-                    # to make sure that it's properly reassigned the next time
-                    # around
-                    if myglobals.Variables.current_assignments.pop(ship.id, None) is None:
-                        myglobals.Misc.loggit('core', 'debug', " -* ship.id: " + str(ship.id) + " was found in an " +
-                                              "invalid state (no current_assignments entry)!")  # should throw exception
+                command_queue.append(ship.make_dropoff())
+                # now we've got to wipe that from the current_assignments
+                # to make sure that it's properly reassigned the next time
+                # around
+                if myglobals.Variables.current_assignments.pop(ship.id, None) is None:
+                    myglobals.Misc.loggit('core', 'debug', " -* ship.id: " + str(ship.id) + " was found in an " +
+                                          "invalid state (no current_assignments entry)!")  # should throw exception
 
-                    continue
+                continue
 
-                elif not ship.is_full and \
-                        myglobals.Variables.current_assignments[ship.id].secondary_mission == myglobals.Missions.busy \
-                        and game_map[ship.position].halite_amount > 0:
-                    # continuing mining here
-                    myglobals.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **continuing mining** @ " +
-                                          str(ship.position))
-                    command_queue.append(ship.stay_still())
-                    continue
+            elif not ship.is_full and \
+                    myglobals.Variables.current_assignments[ship.id].secondary_mission == myglobals.Missions.busy \
+                    and game_map[ship.position].halite_amount > 0:
+                # continuing mining here
+                myglobals.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **continuing mining** @ " +
+                                      str(ship.position))
+                command_queue.append(ship.stay_still())
+                continue
 
-                elif game_map.normalize(myglobals.Variables.current_assignments[ship.id].destination) == ship.position \
-                        and myglobals.Variables.current_assignments[ship.id].primary_mission != \
-                        myglobals.Missions.dropoff and not ship.is_full:
-                    # mine
-                    myglobals.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **mining** @ " +
-                                          str(ship.position))
-                    myglobals.Variables.current_assignments[ship.id] = history.ShipHistory(ship.id, ship.position,
-                                                                                           None, turn,
-                                                                                           myglobals.Missions.mining,
-                                                                                           myglobals.Missions.busy)
-                    command_queue.append(ship.stay_still())
-                    continue
+            elif game_map.normalize(myglobals.Variables.current_assignments[ship.id].destination) == ship.position \
+                    and myglobals.Variables.current_assignments[ship.id].primary_mission != \
+                    myglobals.Missions.dropoff and not ship.is_full:
+                # mine
+                myglobals.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **mining** @ " +
+                                      str(ship.position))
+                myglobals.Variables.current_assignments[ship.id] = history.ShipHistory(ship.id, ship.position,
+                                                                                       None, turn,
+                                                                                       myglobals.Missions.mining,
+                                                                                       myglobals.Missions.busy)
+                command_queue.append(ship.stay_still())
+                continue
 
-                else:
-                    # head to drop off the halite
-                    command_queue.append(seek_n_nav.Nav.return_halite_to_shipyard(ship, me, game_map))
-                    continue
+            else:
+                # head to drop off the halite
+                myglobals.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " in **transit to dropoff**")
+                command_queue.append(seek_n_nav.Nav.return_halite_to_shipyard(ship, me, game_map))
+                continue
 
         except KeyError as ke:
             # set everybody to mining, first of all
@@ -133,6 +137,9 @@ while True:
             not game_map[me.shipyard].is_occupied:
         myglobals.Misc.loggit('core', 'debug', " - spawning ship")
         command_queue.append(me.shipyard.spawn())
+
+    # maintain the current_assignments as best we can here...
+    history.ShipHistory.prune_current_assignments(me)
 
     turn += 1
     game.end_turn(command_queue)
