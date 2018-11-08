@@ -68,6 +68,8 @@ class ShipHistory:
     def prune_current_assignments(me):
         # see if we've got any dead ships still recorded
 
+        shids = []
+
         for ship_history_key in myglobals.Variables.current_assignments.keys():
             myglobals.Misc.loggit('pruning', 'info', " - pruning current_assignments, if necessary (ship: " +
                                   str(ship_history_key) + ")")
@@ -84,10 +86,13 @@ class ShipHistory:
                 # wipe entry
                 myglobals.Misc.loggit('pruning', 'info', " -* wiping ship.id: " + str(ship_history_key) +
                                       " from current_assignments due to its demise")
-                myglobals.Variables.current_assignments.pop(ship_history_key, None)
+                #myglobals.Variables.current_assignments.pop(ship_history_key, None)
+                shids.append(ship_history_key)
 
             #if not success:
             #    # wipe the entry
             #    myglobals.Misc.loggit('pruning', 'debug', " - wiping ship.id " + str(ship_history) + " from " +
             #                          " current_assignments due to its demise.")
             #    myglobals.Variables.current_assignments.pop(ship_history, None)
+
+            return shids
