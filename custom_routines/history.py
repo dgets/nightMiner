@@ -63,3 +63,36 @@ class ShipHistory:
         return "ship ID: " + str(self.id) + ", location: " + str(self.location) + ", destination: " \
                + str(self.destination) + ", turnstamp set: " + str(self.turnstamp) + ", current_mission: " + \
                self.current_mission + ", primary_mission: " + self.primary_mission
+
+    @staticmethod
+    def prune_current_assignments(me):
+        # see if we've got any dead ships still recorded
+
+        shids = []
+
+        for ship_history_key in myglobals.Variables.current_assignments.keys():
+            myglobals.Misc.loggit('pruning', 'info', " - pruning current_assignments, if necessary (ship: " +
+                                  str(ship_history_key) + ")")
+
+            #success = False
+            #for tmp_ship in me.get_ships():  # yeah, yeah, I _SO_ know that there's a better way to do this :| frazzled
+            #    myglobals.Misc.loggit('pruning', 'debug', " -** tmp_ship dump: " + str(tmp_ship))
+            #    myglobals.Misc.loggit('pruning', 'debug', " -** ship_history dump: " + str(ship_history))
+
+            #    if tmp_ship.id == ship_history:
+            #        success = True
+            # NOW we'll do this the RIGHT way
+            if not myglobals.Variables.current_assignments[ship_history_key].is_alive(me):
+                # wipe entry
+                myglobals.Misc.loggit('pruning', 'info', " -* wiping ship.id: " + str(ship_history_key) +
+                                      " from current_assignments due to its demise")
+                #myglobals.Variables.current_assignments.pop(ship_history_key, None)
+                shids.append(ship_history_key)
+
+            #if not success:
+            #    # wipe the entry
+            #    myglobals.Misc.loggit('pruning', 'debug', " - wiping ship.id " + str(ship_history) + " from " +
+            #                          " current_assignments due to its demise.")
+            #    myglobals.Variables.current_assignments.pop(ship_history, None)
+
+            return shids

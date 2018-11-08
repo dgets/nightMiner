@@ -21,8 +21,9 @@ class Const:
         'core': True,
         'seek': True,
         'locate_ore': True,
-        'perimeter_search': True,
+        'perimeter_search': False,  # this will almost certainly be phased out
         'save_state': True,
+        'pruning': False,
     }
 
     Enough_Ore_To_Spawn = 2000
