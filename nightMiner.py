@@ -49,28 +49,27 @@ while True:
     for ship in me.get_ships():
         myglobals.Misc.loggit('core', 'info', " - processing ship.id: " + str(ship.id))
         try:
-            #if myglobals.Variables.current_assignments[ship.id].primary_mission == myglobals.Missions.dropoff and \
-            #
+            # if this is a new ship, we'll be in the except, below
             if myglobals.Variables.current_assignments[ship.id].primary_mission == myglobals.Missions.mining:
-                # if this is a new ship, we'll be in except, below
-                if myglobals.Variables.current_assignments[ship.id].secondary_mission == myglobals.Missions.busy and \
-                   game_map[ship.position].halite_amount == 0:
-                    # we've mined all of the halite, or someone else got to it
-                    # before we did here, bounce a random square
+                myglobals.Misc.loggit('core', 'debug', " - ship.id " + str(ship.id) + " in primary mining conditional")
+                # we've mined all of the halite, or someone else got to it
+                # before we did here, bounce a random square
+                if ship.halite_amount < 900 and game_map[ship.position].halite_amount == 0:
                     myglobals.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **randomly wandering**")
                     rnd_dir = random.choice([Direction.North, Direction.South, Direction.East, Direction.West])
                     myglobals.Variables.current_assignments[ship.id].destination = \
                         ship.position.directional_offset(rnd_dir)
+                    myglobals.Variables.current_assignments[ship.id].secondary_mission = myglobals.Missions.in_transit
                     
                     #command_queue.append(ship.move(random.choice([Direction.North, Direction.South, Direction.East,
                     #                                              Direction.West])))
                     command_queue.append(seek_n_nav.Nav.less_dumb_move(ship, myglobals.Misc.r_dir_choice(), game_map))
                     continue
 
+                # continuing transit for this ship to its final destination
                 elif myglobals.Variables.current_assignments[ship.id].secondary_mission == \
                         myglobals.Missions.in_transit \
                         and myglobals.Variables.current_assignments[ship.id].destination != ship.position:
-                    # continuing transit for this ship to its final destination
                     myglobals.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **scooting** to " +
                                           str(myglobals.Variables.current_assignments[ship.id].destination))
 
@@ -79,6 +78,31 @@ while True:
                                                                            current_assignments[ship.id].destination)))
                     continue
 
+                # we've fully transited and are in the spot where we wanted to mine
+                elif myglobals.Variables.current_assignments[ship.id].secondary_mission == \
+                        myglobals.Missions.in_transit:
+                    myglobals.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **mining** at " +
+                                          str(ship.position))
+                    myglobals.Variables.current_assignments[ship.id].secondary_mission = myglobals.Missions.busy
+                    myglobals.Variables.current_assignments[ship.id].turnstamp = turn
+
+                    command_queue.append(ship.stay_still())
+                    continue
+
+                # transit back to the shipyard/dropoff
+                elif ship.is_full or (ship.halite_amount >= 900 and game_map[ship.position].halite_amount == 0):
+                    # head to drop off the halite
+                    myglobals.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " in **transit to dropoff**")
+                    command_queue.append(seek_n_nav.Nav.return_halite_to_shipyard(ship, me, game_map, turn))
+                    continue
+
+                # not sure what happened just yet
+                else:
+                    myglobals.Misc.loggit('core', 'debug', " -* ship.id: " + str(ship.id) + " **WTF**")
+                    command_queue.append(ship.stay_still())
+                    continue
+
+            # we've transited to the shipyard/dropoff
             elif myglobals.Variables.current_assignments[ship.id].secondary_mission == \
                     myglobals.Missions.in_transit \
                     and myglobals.Variables.current_assignments[ship.id].primary_mission == \
@@ -99,14 +123,15 @@ while True:
 
                 continue
 
-            elif not ship.is_full and \
-                    myglobals.Variables.current_assignments[ship.id].secondary_mission == myglobals.Missions.busy \
-                    and game_map[ship.position].halite_amount > 0:
-                # continuing mining here
-                myglobals.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **continuing mining** @ " +
-                                      str(ship.position))
-                command_queue.append(ship.stay_still())
-                continue
+            # pretty sure this is unreachable code
+            #elif not ship.is_full and \
+            #        myglobals.Variables.current_assignments[ship.id].secondary_mission == myglobals.Missions.busy \
+            #        and game_map[ship.position].halite_amount > 0:
+            #    # continuing mining here
+            #    myglobals.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **continuing mining** @ " +
+            #                          str(ship.position))
+            #    command_queue.append(ship.stay_still())
+            #    continue
 
             elif game_map.normalize(myglobals.Variables.current_assignments[ship.id].destination) == ship.position \
                     and myglobals.Variables.current_assignments[ship.id].primary_mission != \
@@ -124,7 +149,7 @@ while True:
             else:
                 # head to drop off the halite
                 myglobals.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " in **transit to dropoff**")
-                command_queue.append(seek_n_nav.Nav.return_halite_to_shipyard(ship, me, game_map))
+                command_queue.append(seek_n_nav.Nav.return_halite_to_shipyard(ship, me, game_map, turn))
                 continue
 
         except KeyError as ke:

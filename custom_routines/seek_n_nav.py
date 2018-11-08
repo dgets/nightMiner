@@ -34,13 +34,14 @@ class Nav:
         return Position(current_position.x + x_offset, current_position.y + y_offset)
 
     @staticmethod
-    def return_halite_to_shipyard(ship, me, game_map):
+    def return_halite_to_shipyard(ship, me, game_map, turn):
         myglobals.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) +
                               " **returning to shipyard** at " + str(me.shipyard.position))
 
         myglobals.Variables.current_assignments[ship.id].primary_mission = myglobals.Missions.dropoff
         myglobals.Variables.current_assignments[ship.id].secondary_mission = myglobals.Missions.in_transit
         myglobals.Variables.current_assignments[ship.id].destination = me.shipyard.position
+        myglobals.Variables.current_assignments[ship.id].turnstamp = turn
 
         return ship.move(game_map.naive_navigate(ship, myglobals.Variables.current_assignments[ship.id].destination))
 
