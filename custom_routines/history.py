@@ -66,6 +66,14 @@ class ShipHistory:
 
     @staticmethod
     def prune_current_assignments(me):
+        """
+        Runs through the current assignments; picks out which ships are in the
+        history, but not in the valid ships list (ie dead ones), and returns
+        the list to the caller
+
+        :param me:
+        :return:
+        """
         # see if we've got any dead ships still recorded
 
         shids = []
