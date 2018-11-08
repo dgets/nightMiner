@@ -8,16 +8,22 @@ Holds debugging and other constant values
 """
 
 import logging
+import random
 from enum import Enum
 
+from hlt import Direction
 
 class Const:
+    """
+    global constants
+    """
     DEBUGGING = {
         'core': True,
         'seek': True,
         'locate_ore': True,
-        'perimeter_search': True,
+        'perimeter_search': False,  # this will almost certainly be phased out
         'save_state': True,
+        'pruning': False,
     }
 
     Enough_Ore_To_Spawn = 2000
@@ -25,10 +31,17 @@ class Const:
 
 
 class Variables:
-    current_assignments = { }
+    """
+    global variables
+    """
+
+    current_assignments = { }   # contains { id: ShipHistory }
 
 
 class Missions(Enum):
+    """
+    global mission assignment categories
+    """
     in_transit = 1
     mining = 2
     dropoff = 3
@@ -64,3 +77,14 @@ class Misc:
                 raise RuntimeError("Log level specified is not implemented in myglobals.Misc.loggit()")
 
         return
+
+    @staticmethod
+    def r_dir_choice():
+        """
+        just returns one of the 4 cardinal directions at random(-ish); this is
+        really just more of a wrapper to save typing than anything
+
+        :return: Direction
+        """
+
+        return random.choice([Direction.North, Direction.South, Direction.East, Direction.West])
