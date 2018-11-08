@@ -68,19 +68,26 @@ class ShipHistory:
     def prune_current_assignments(me):
         # see if we've got any dead ships still recorded
 
-        for ship_history in myglobals.Variables.current_assignments.keys():
-            myglobals.Misc.loggit('core', 'info', " - pruning current_assignments, if necessary")
+        for ship_history_key in myglobals.Variables.current_assignments.keys():
+            myglobals.Misc.loggit('pruning', 'info', " - pruning current_assignments, if necessary (ship: " +
+                                  str(ship_history_key) + ")")
 
-            success = False
-            for tmp_ship in me.get_ships():  # yeah, yeah, I _SO_ know that there's a better way to do this :| frazzled
-                myglobals.Misc.loggit('core', 'debug', " -** tmp_ship dump: " + str(tmp_ship))
-                myglobals.Misc.loggit('core', 'debug', " -** ship_history dump: " + str(ship_history))
+            #success = False
+            #for tmp_ship in me.get_ships():  # yeah, yeah, I _SO_ know that there's a better way to do this :| frazzled
+            #    myglobals.Misc.loggit('pruning', 'debug', " -** tmp_ship dump: " + str(tmp_ship))
+            #    myglobals.Misc.loggit('pruning', 'debug', " -** ship_history dump: " + str(ship_history))
 
-                if tmp_ship.id == ship_history:
-                    success = True
+            #    if tmp_ship.id == ship_history:
+            #        success = True
+            # NOW we'll do this the RIGHT way
+            if not myglobals.Variables.current_assignments[ship_history_key].is_alive(me):
+                # wipe entry
+                myglobals.Misc.loggit('pruning', 'info', " -* wiping ship.id: " + str(ship_history_key) +
+                                      " from current_assignments due to its demise")
+                myglobals.Variables.current_assignments.pop(ship_history_key, None)
 
-            if not success:
-                # wipe the entry
-                myglobals.Misc.loggit('core', 'debug', " - wiping ship.id " + str(ship_history) + " from " +
-                                      " current_assignments due to its demise.")
-                myglobals.Variables.current_assignments.pop(ship_history, None)
+            #if not success:
+            #    # wipe the entry
+            #    myglobals.Misc.loggit('pruning', 'debug', " - wiping ship.id " + str(ship_history) + " from " +
+            #                          " current_assignments due to its demise.")
+            #    myglobals.Variables.current_assignments.pop(ship_history, None)
