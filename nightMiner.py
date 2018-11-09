@@ -35,8 +35,8 @@ while True:
 
     # initialize per-turn queues
     command_queue = []
-    kill_from_history_queue = []    # does this really have to be here, with
-                                    # the first line in the per-ships loop?
+    kill_from_history_queue = []
+    new_kill_list_additions = []
 
     # clear up other potential crap
     c_queue_addition = None
@@ -79,16 +79,6 @@ while True:
 
                 continue
 
-            # pretty sure this is unreachable code
-            #elif not ship.is_full and \
-            #        myglobals.Variables.current_assignments[ship.id].secondary_mission == myglobals.Missions.busy \
-            #        and game_map[ship.position].halite_amount > 0:
-            #    # continuing mining here
-            #    myglobals.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **continuing mining** @ " +
-            #                          str(ship.position))
-            #    command_queue.append(ship.stay_still())
-            #    continue
-
             elif game_map.normalize(myglobals.Variables.current_assignments[ship.id].destination) == ship.position \
                     and myglobals.Variables.current_assignments[ship.id].primary_mission != \
                     myglobals.Missions.dropoff and not ship.is_full:
@@ -129,14 +119,19 @@ while True:
         command_queue.append(me.shipyard.spawn())
 
     # maintain the current_assignments as best we can here...
-    # history.ShipHistory.prune_current_assignments(me)
+    myglobals.Misc.loggit('core', 'debug', "Killing from history for reassignment: " + str(kill_from_history_queue))
+
+    # we've already got ships in the kill queue that require reassignment,
+    # now we just need to add the ones that've been destroyed
+    new_kill_list_additions = history.ShipHistory.prune_current_assignments(me)
+    myglobals.Misc.loggit('core', 'debug', "Killing from history due to ship 8-x: " + str(new_kill_list_additions))
+    if new_kill_list_additions is not None:
+        kill_from_history_queue += new_kill_list_additions
+
     for shid in kill_from_history_queue:
         # wipe away the dingleberries
         myglobals.Misc.loggit('core', 'debug', "Killing history of shid: " + str(shid))
-        myglobals.Variables.current_assignments.pop(shid)
-
-    for shid in history.ShipHistory.prune_current_assignments(me):
-            myglobals.Variables.current_assignments.pop(shid)
+        myglobals.Variables.current_assignments.pop(shid, None)
 
     turn += 1
     game.end_turn(command_queue)
