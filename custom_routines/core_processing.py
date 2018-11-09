@@ -9,13 +9,10 @@ debugging and maintainability purposes.  Try to remember to keep anything that
 is specifically for mining or halite dropoff in a mining specific file or,
 perhaps, seek_n_nav.py.
 """
-import random
 
 import hlt
 
-from hlt import Direction
-
-from . import myglobals, seek_n_nav
+from . import myglobals, seek_n_nav, mining
 
 
 class Core:
@@ -47,6 +44,7 @@ class Core:
         the start of each turn in the primary game loop.
 
         :param game:
+        :param me:
         :return:
         """
 
@@ -72,43 +70,26 @@ class Core:
         # we've mined all of the halite, or someone else got to it
         # before we did here, bounce a random square
         if ship.halite_amount < 900 and game_map[ship.position].halite_amount == 0:
-            myglobals.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **randomly wandering**")
-            rnd_dir = random.choice([Direction.North, Direction.South, Direction.East, Direction.West])
-            myglobals.Variables.current_assignments[ship.id].destination = \
-                ship.position.directional_offset(rnd_dir)
-            myglobals.Variables.current_assignments[ship.id].secondary_mission = myglobals.Missions.in_transit
-            myglobals.Variables.current_assignments[ship.id].turnstamp = turn
-
-            return seek_n_nav.Nav.less_dumb_move(ship, myglobals.Misc.r_dir_choice(), game_map)
+            return mining.Mine.low_cargo_and_no_immediate_halite(ship, game_map, turn)
 
         # continuing transit for this ship to its final destination
         elif myglobals.Variables.current_assignments[ship.id].secondary_mission == \
                 myglobals.Missions.in_transit \
                 and game_map.normalize(myglobals.Variables.current_assignments[ship.id].destination) != \
                 ship.position:
-            myglobals.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **scooting** to " +
-                                  str(myglobals.Variables.current_assignments[ship.id].destination))
-
-            return ship.move(game_map.naive_navigate(ship,
-                                                     myglobals.Variables.current_assignments[ship.id].destination))
+            return seek_n_nav.Nav.scoot(ship, game_map)
 
         # we've fully transited and are in the spot where we wanted to mine
         elif myglobals.Variables.current_assignments[ship.id].secondary_mission == \
                 myglobals.Missions.in_transit:
-            myglobals.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **mining** at " +
-                                  str(ship.position))
-            myglobals.Variables.current_assignments[ship.id].secondary_mission = myglobals.Missions.busy
-            myglobals.Variables.current_assignments[ship.id].turnstamp = turn
-
-            return ship.stay_still()
+            return mining.Mine.done_with_transit_now_mine(ship, turn)
 
         # transit back to the shipyard
         elif (ship.is_full or (ship.halite_amount >= 900 and game_map[ship.position].halite_amount == 0)) and \
                 ship.position != me.shipyard.position:
             # ship.position != myglobals.Variables.current_assignments[ship.id].destination:
             # head to drop off the halite
-            myglobals.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " in **transit to dropo**")
-
+            myglobals.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " in **transit to drop**")
             return seek_n_nav.Nav.return_halite_to_shipyard(ship, me, game_map, turn)
 
         elif (ship.is_full or (ship.halite_amount >= 900 and game_map[ship.position].halite_amount == 0)) and \
@@ -116,11 +97,11 @@ class Core:
             # not sure why we're still in this loop, but drop off the goddamned halite
             myglobals.Misc.loggit('core', 'debug', " -* ship.id: " + str(ship.id) + " **making drop** " +
                                   "from within the **mining** loop for some reason")
-
             return None     # we'll test for it to see if shid needs to die
 
         # not sure what happened just yet
         else:
-            myglobals.Misc.loggit('core', 'debug', " -* ship.id: " + str(ship.id) + " **WTF**")
-
+            myglobals.Misc.loggit('core', 'debug', " -* ship.id: " + str(ship.id) + " **WTF**  ship history dump: " +
+                                  str(myglobals.Variables.current_assignments[ship.id]) + "; full ship dump: " +
+                                  str(ship))
             return ship.stay_still()

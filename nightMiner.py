@@ -38,6 +38,9 @@ while True:
     kill_from_history_queue = []    # does this really have to be here, with
                                     # the first line in the per-ships loop?
 
+    # clear up other potential crap
+    c_queue_addition = None
+
     for ship in me.get_ships():
         kill_from_history_queue = []
 
