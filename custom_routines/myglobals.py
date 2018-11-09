@@ -11,7 +11,7 @@ import logging
 import random
 from enum import Enum
 
-from hlt import Direction
+from hlt import Direction, constants, game_map
 
 class Const:
     """
@@ -30,6 +30,11 @@ class Const:
     Initial_Scoot_Distance = 5
     Max_Chunk_Width = Initial_Scoot_Distance
     Max_Chunk_Height = Initial_Scoot_Distance
+    #Max_Scuttle_Time = constants.MAX_TURNS - (Game.game_map.width * 2)
+    #Max_Scuttle_Time = 400 - (game_map.width * 2)  # until above works
+    # NOTE: the above will need to have the # of living ships * 2 added to it,
+    # so that they can all get in to dropoff and get out of each others way,
+    # so long as we're only dealing with the one shipyard & no dropoffs
 
 class Variables:
     """
@@ -50,6 +55,7 @@ class Missions(Enum):
     defense = 5
     offense = 6
     busy = 7
+    scuttle = 8
 
 
 class Misc:
