@@ -15,38 +15,31 @@ import random
 
 import hlt
 from hlt import Direction
-from custom_routines import myglobals, history, seek_n_nav
+from custom_routines import myglobals, history, seek_n_nav, core_processing
 
 # --==++** GAME BEGIN **++==--
 
-game = hlt.Game()
-
-# really good place to do computationally expensive preprocessing *cough*
-
-game.ready("nightMiner")
-
-myglobals.Misc.loggit('any', 'info', "Hatched and swimming! Player ID is {}.".format(game.my_id))
+game = core_processing.Core.original_preprocessing()
 
 # for turnstamps
 turn = 0
 
 # --==++** PRIMARY GAME LOOP **++==--
 while True:
-    myglobals.Misc.loggit('core', 'info', " - updating frame")
-    game.update_frame()
-
-    myglobals.Misc.loggit('core', 'info', " - updating 'me'")
-    # keeps things speedier
-    me = game.me
-    myglobals.Misc.loggit('core', 'info', " - updating 'game_map'")
+    # set local versions of costly lookups
     game_map = game.game_map
+    me = game.me  # keeps things speedier
 
-    myglobals.Misc.loggit('core', 'info', " - initializing 'command_queue'")
+    # costly preprocessing time
+    core_processing.Core.per_turn_preprocessing(game, me)
+
+    # initialize per-turn queues
     command_queue = []
+    kill_from_history_queue = []    # does this really have to be here, with
+                                    # the first line in the per-ships loop?
 
-    kill_from_history_queue = []
-
-    myglobals.Misc.loggit('core', 'debug', " -* me.get_ships() dump: " + str(me.get_ships()))
+    # clear up other potential crap
+    c_queue_addition = None
 
     for ship in me.get_ships():
         kill_from_history_queue = []
@@ -56,68 +49,15 @@ while True:
             # if this is a new ship, we'll be in the except, below
             if myglobals.Variables.current_assignments[ship.id].primary_mission == myglobals.Missions.mining:
                 myglobals.Misc.loggit('core', 'debug', " - ship.id " + str(ship.id) + " in primary mining conditional")
-                # we've mined all of the halite, or someone else got to it
-                # before we did here, bounce a random square
-                if ship.halite_amount < 900 and game_map[ship.position].halite_amount == 0:
-                    myglobals.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **randomly wandering**")
-                    rnd_dir = random.choice([Direction.North, Direction.South, Direction.East, Direction.West])
-                    myglobals.Variables.current_assignments[ship.id].destination = \
-                        ship.position.directional_offset(rnd_dir)
-                    myglobals.Variables.current_assignments[ship.id].secondary_mission = myglobals.Missions.in_transit
-                    myglobals.Variables.current_assignments[ship.id].turnstamp = turn
+                c_queue_addition = core_processing.Core.primary_mission_mining(ship, game_map, me, turn)
 
-                    command_queue.append(seek_n_nav.Nav.less_dumb_move(ship, myglobals.Misc.r_dir_choice(), game_map))
-                    continue
-
-                # continuing transit for this ship to its final destination
-                elif myglobals.Variables.current_assignments[ship.id].secondary_mission == \
-                        myglobals.Missions.in_transit \
-                        and game_map.normalize(myglobals.Variables.current_assignments[ship.id].destination) != \
-                        ship.position:
-                    myglobals.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **scooting** to " +
-                                          str(myglobals.Variables.current_assignments[ship.id].destination))
-
-                    command_queue.append(ship.move(game_map.naive_navigate(ship,
-                                                                           myglobals.Variables.
-                                                                           current_assignments[ship.id].destination)))
-                    continue
-
-                # we've fully transited and are in the spot where we wanted to mine
-                elif myglobals.Variables.current_assignments[ship.id].secondary_mission == \
-                        myglobals.Missions.in_transit:
-                    myglobals.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **mining** at " +
-                                          str(ship.position))
-                    myglobals.Variables.current_assignments[ship.id].secondary_mission = myglobals.Missions.busy
-                    myglobals.Variables.current_assignments[ship.id].turnstamp = turn
-
-                    command_queue.append(ship.stay_still())
-                    continue
-
-                # transit back to the shipyard
-                elif (ship.is_full or (ship.halite_amount >= 900 and game_map[ship.position].halite_amount == 0)) and \
-                        ship.position != me.shipyard.position:
-                    # ship.position != myglobals.Variables.current_assignments[ship.id].destination:
-                    # head to drop off the halite
-                    myglobals.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " in **transit to dropo**")
-                    command_queue.append(seek_n_nav.Nav.return_halite_to_shipyard(ship, me, game_map, turn))
-                    continue
-
-                elif (ship.is_full or (ship.halite_amount >= 900 and game_map[ship.position].halite_amount == 0)) and \
-                        ship.position == myglobals.Variables.current_assignments[ship.id].destination:
-                    # not sure why we're still in this loop, but drop off the goddamned halite
-                    myglobals.Misc.loggit('core', 'debug', " -* ship.id: " + str(ship.id) + " **making drop** " +
-                                          "from within the **mining** loop for some reason")
-                    #myglobals.Variables.current_assignments.pop(ship.id)    # wipe from history to be reassigned ERR
+                if c_queue_addition is not None:
+                    command_queue.append(c_queue_addition)
+                else:
                     myglobals.Misc.loggit('core', 'debug', " -* added ship.id: " + str(ship.id) + " to kill list")
                     kill_from_history_queue.append(ship.id)
 
-                    continue
-
-                # not sure what happened just yet
-                else:
-                    myglobals.Misc.loggit('core', 'debug', " -* ship.id: " + str(ship.id) + " **WTF**")
-                    command_queue.append(ship.stay_still())
-                    continue
+                continue
 
             # we've transited to the shipyard/dropoff
             elif myglobals.Variables.current_assignments[ship.id].secondary_mission == \
@@ -182,6 +122,7 @@ while True:
 
         myglobals.Misc.loggit('core', 'debug', " - found and processed ship: " + str(ship.id))
 
+    # TODO: change hardcoded 200 below into a percentage of game turns
     if game.turn_number <= 200 and me.halite_amount > myglobals.Const.Enough_Ore_To_Spawn and \
             not game_map[me.shipyard].is_occupied:
         myglobals.Misc.loggit('core', 'debug', " - spawning ship")

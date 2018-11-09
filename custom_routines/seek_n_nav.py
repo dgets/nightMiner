@@ -76,6 +76,21 @@ class Nav:
                                   str(ship.position))
             return ship.stay_still()
 
+    @staticmethod
+    def scoot(ship, game_map):
+        """
+        In transit to a destination; just another step on the way.
+
+        :param ship:
+        :param game_map:
+        :return:
+        """
+        myglobals.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **scooting** to " +
+                              str(myglobals.Variables.current_assignments[ship.id].destination))
+
+        return ship.move(game_map.naive_navigate(ship,
+                                                 myglobals.Variables.current_assignments[ship.id].destination))
+
 
 class StartUp:
     @staticmethod
