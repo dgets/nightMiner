@@ -81,7 +81,7 @@ class Misc:
     @staticmethod
     def r_dir_choice():
         """
-        just returns one of the 4 cardinal directions at random(-ish); this is
+        Just returns one of the 4 cardinal directions at random(-ish); this is
         really just more of a wrapper to save typing than anything
 
         :return: Direction

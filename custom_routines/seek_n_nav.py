@@ -35,6 +35,16 @@ class Nav:
 
     @staticmethod
     def return_halite_to_shipyard(ship, me, game_map, turn):
+        """
+        Returns naive_navigate()'s instructions on how best to return to the
+        initial shipyard
+
+        :param ship:
+        :param me:
+        :param game_map:
+        :param turn:
+        :return:
+        """
         myglobals.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) +
                               " **returning to shipyard** at " + str(me.shipyard.position))
 
@@ -47,6 +57,15 @@ class Nav:
 
     @staticmethod
     def less_dumb_move(ship, direction, game_map):
+        """
+        Moves into the cell in the direction given, if not occupied, or else
+        waits for a turn in order to avoid collision
+
+        :param ship:
+        :param direction:
+        :param game_map:
+        :return:
+        """
         next_dest = game_map[ship.position.directional_offset(direction)]
         if next_dest.is_empty:
             myglobals.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " one step at a time...")
@@ -56,6 +75,21 @@ class Nav:
             myglobals.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " avoiding collision at " +
                                   str(ship.position))
             return ship.stay_still()
+
+    @staticmethod
+    def scoot(ship, game_map):
+        """
+        In transit to a destination; just another step on the way.
+
+        :param ship:
+        :param game_map:
+        :return:
+        """
+        myglobals.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **scooting** to " +
+                              str(myglobals.Variables.current_assignments[ship.id].destination))
+
+        return ship.move(game_map.naive_navigate(ship,
+                                                 myglobals.Variables.current_assignments[ship.id].destination))
 
 
 class StartUp:

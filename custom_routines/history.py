@@ -61,11 +61,19 @@ class ShipHistory:
 
     def __str__(self):
         return "ship ID: " + str(self.id) + ", location: " + str(self.location) + ", destination: " \
-               + str(self.destination) + ", turnstamp set: " + str(self.turnstamp) + ", current_mission: " + \
-               self.current_mission + ", primary_mission: " + self.primary_mission
+               + str(self.destination) + ", turnstamp set: " + str(self.turnstamp) + ", secondary_mission: " + \
+               str(self.secondary_mission) + ", primary_mission: " + str(self.primary_mission)
 
     @staticmethod
     def prune_current_assignments(me):
+        """
+        Runs through the current assignments; picks out which ships are in the
+        history, but not in the valid ships list (ie dead ones), and returns
+        the list to the caller
+
+        :param me:
+        :return:
+        """
         # see if we've got any dead ships still recorded
 
         shids = []
