@@ -23,7 +23,7 @@ class Core:
     @staticmethod
     def original_preprocessing():
         """
-        Computationally expensive and/or other preprocessing that nees to be
+        Computationally expensive and/or other preprocessing that needs to be
         taken care of before the primary per-turn loop.
 
         :return: game (a local version of hlt.Game()'s return)

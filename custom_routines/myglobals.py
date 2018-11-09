@@ -30,7 +30,7 @@ class Const:
     Initial_Scoot_Distance = 5
     Max_Chunk_Width = Initial_Scoot_Distance
     Max_Chunk_Height = Initial_Scoot_Distance
-    #Max_Scuttle_Time = constants.MAX_TURNS - (Game.game_map.width * 2)
+    Max_Scuttle_Time = constants.MAX_TURNS - (Game.game_map.width * 2)
     #Max_Scuttle_Time = 400 - (game_map.width * 2)  # until above works
     # NOTE: the above will need to have the # of living ships * 2 added to it,
     # so that they can all get in to dropoff and get out of each others way,
