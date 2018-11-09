@@ -115,8 +115,6 @@ while True:
 
         myglobals.Misc.loggit('core', 'debug', " - found and processed ship: " + str(ship.id))
 
-    # TODO: change hardcoded 200 below into a percentage of game turns
-    #if game.turn_number <= 200 and me.halite_amount > myglobals.Const.Enough_Ore_To_Spawn and \
     if game.turn_number <= (constants.MAX_TURNS / 2) and me.halite_amount > myglobals.Const.Enough_Ore_To_Spawn and \
             not game_map[me.shipyard].is_occupied:
         myglobals.Misc.loggit('core', 'debug', " - spawning ship")
