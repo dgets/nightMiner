@@ -115,16 +115,16 @@ class Core:
         c_queue = []
 
         for ship in me.get_ships():
-            if myglobals.Variables.current_assignments[ship.id].primary_assignment == myglobals.Missions.get_distance:
+            if myglobals.Variables.current_assignments[ship.id].primary_mission == myglobals.Missions.get_distance:
                 c_queue.append(ship.move(game_map.naive_navigate(ship,
                                                                  myglobals.Variables.current_assignments[ship.id].
                                                                  destination)))
 
-            elif ship.halite_amount < 100 and myglobals.Variables.current_assignments[ship.id].primary_assignment != \
+            elif ship.halite_amount < 100 and myglobals.Variables.current_assignments[ship.id].primary_mission != \
                     myglobals.Missions.get_distance:
                 # get away from the drop
-                myglobals.Variables.current_assignments[ship.id].primary_assignment = myglobals.Missions.get_distance
-                myglobals.Variables.current_assignments[ship.id].secondary_assignment = myglobals.Missions.in_transit
+                myglobals.Variables.current_assignments[ship.id].primary_mission = myglobals.Missions.get_distance
+                myglobals.Variables.current_assignments[ship.id].secondary_mission = myglobals.Missions.in_transit
                 myglobals.Variables.current_assignments[ship.id].turnstamp = turn
                 myglobals.Variables.current_assignments[ship.id].destination = \
                     seek_n_nav.Nav.generate_random_offset(ship.position)
@@ -132,10 +132,10 @@ class Core:
                 c_queue.append(ship.move(game_map.naive_navigate(ship,
                                                                  myglobals.Variables.current_assignments[ship.id].
                                                                  destination)))
-            elif myglobals.Variables.current_assignments[ship.id].primary_assignment != myglobals.Missions.scuttle:
+            elif myglobals.Variables.current_assignments[ship.id].primary_mission != myglobals.Missions.scuttle:
                 # head back to the drop, it's scuttle time
-                myglobals.Variables.current_assignments[ship.id].primary_assignment = myglobals.Missions.scuttle
-                myglobals.Variables.current_assignments[ship.id].secondary_assignment = myglobals.Missions.in_transit
+                myglobals.Variables.current_assignments[ship.id].primary_mission = myglobals.Missions.scuttle
+                myglobals.Variables.current_assignments[ship.id].secondary_mission = myglobals.Missions.in_transit
                 myglobals.Variables.current_assignments[ship.id].turnstamp = turn
 
                 c_queue.append(ship.move(game_map.naive_navigate(ship, me.shipyard.position)))

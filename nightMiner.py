@@ -39,10 +39,10 @@ while True:
     c_queue_addition = None
 
     myglobals.Misc.loggit('core', 'debug', " Making sure turn (" + str(turn) + " <= " +
-                          str(400 - (game_map.width * 2) - (len(me.get_ships()) * 2)) + ")")
+                          str(400 - game_map.width - (len(me.get_ships()) * 2)) + ")")
 
     # if not turn > (myglobals.Const.Max_Scuttle_Time - (len(me.get_ships) * 2)):    # until myglobals issues are fixed
-    if turn <= (400 - (game_map.width * 2) - (len(me.get_ships()) * 2)):
+    if not turn > (400 - game_map.width - (len(me.get_ships()) * 2)):
         # we're not in the scuttle time crunch yet
         for ship in me.get_ships():
             kill_from_history_queue = []
@@ -118,7 +118,7 @@ while True:
 
             myglobals.Misc.loggit('core', 'debug', " - found and processed ship: " + str(ship.id))
 
-        if game.turn_number <= (constants.MAX_TURNS % 2) and me.halite_amount > myglobals.Const.Enough_Ore_To_Spawn \
+        if turn <= (constants.MAX_TURNS % 2) and me.halite_amount >= myglobals.Const.Enough_Ore_To_Spawn \
                 and not game_map[me.shipyard].is_occupied:
             myglobals.Misc.loggit('core', 'debug', " - spawning ship")
             command_queue.append(me.shipyard.spawn())
@@ -139,6 +139,7 @@ while True:
             myglobals.Variables.current_assignments.pop(shid, None)
 
     else:
+        myglobals.Misc.loggit('core', 'debug', "Entered the scuttle race clause")
         # scuttle everybody home and avoid the clusterfsck
         command_queue = core_processing.Core.scuttle_for_finish(me, game_map, turn)
 
