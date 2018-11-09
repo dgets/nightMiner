@@ -135,11 +135,8 @@ while True:
         myglobals.Misc.loggit('core', 'debug', "Killing history of shid: " + str(shid))
         myglobals.Variables.current_assignments.pop(shid)
 
-    try:
-        for shid in history.ShipHistory.prune_current_assignments(me):
+    for shid in history.ShipHistory.prune_current_assignments(me):
             myglobals.Variables.current_assignments.pop(shid)
-    except:
-        pass
 
     turn += 1
     game.end_turn(command_queue)

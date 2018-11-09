@@ -7,6 +7,7 @@ Class will hold different (dumb) analytic routines.
 """
 
 from hlt import Position
+
 from . import myglobals
 
 
@@ -89,4 +90,8 @@ class MapChunk:
             for y in range(self.y_start, self.y_start - self.Height):
                 if map[Position(x, y)].halite_amount == 0:
                     map[Position(x, y)].mark_unsafe(ship)
+
+    @staticmethod
+    def create_centered_chunk(me, ship, map):
+        return MapChunk(me, map, ship.position.x - (MapChunk.Width % 2), ship.position.y - (MapChunk.Height % 2))
 
