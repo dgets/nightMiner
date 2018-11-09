@@ -69,6 +69,7 @@ while True:
                 # make the drop
                 myglobals.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " making drop @ " +
                                       str(ship.position))
+                kill_from_history_queue.append(ship.id)
 
                 # now we've got to wipe that from the current_assignments
                 # to make sure that it's properly reassigned the next time
@@ -104,6 +105,7 @@ while True:
                 # drop off the fucking halite HERE then, if nothing else
                 myglobals.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " DROP the BONE")
                 kill_from_history_queue.append(ship.id)
+
                 continue
 
         except KeyError as ke:
