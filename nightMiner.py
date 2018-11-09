@@ -118,7 +118,12 @@ while True:
 
             myglobals.Misc.loggit('core', 'debug', " - found and processed ship: " + str(ship.id))
 
-        if turn <= (constants.MAX_TURNS % 2) and me.halite_amount >= myglobals.Const.Enough_Ore_To_Spawn \
+        #myglobals.Misc.loggit('core', 'debug', "verifying that turn " + str(turn) + " <= " +
+        #                      str(constants.MAX_TURNS % 2) + " and halite " + str(me.halite_amount) + " >= " +
+        #                      str(myglobals.Const.Enough_Ore_To_Spawn))
+
+        #if turn <= (constants.MAX_TURNS % 2) and me.halite_amount >= myglobals.Const.Enough_Ore_To_Spawn \
+        if turn <= 400 and me.halite_amount >= myglobals.Const.Enough_Ore_To_Spawn  \
                 and not game_map[me.shipyard].is_occupied:
             myglobals.Misc.loggit('core', 'debug', " - spawning ship")
             command_queue.append(me.shipyard.spawn())
