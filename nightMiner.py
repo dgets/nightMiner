@@ -13,8 +13,9 @@ time around.  ;)
 
 import random
 
-import hlt
-from hlt import Direction
+#import hlt
+#from hlt import Direction
+from hlt import constants
 from custom_routines import myglobals, history, seek_n_nav, core_processing
 
 # --==++** GAME BEGIN **++==--
@@ -35,8 +36,8 @@ while True:
 
     # initialize per-turn queues
     command_queue = []
-    kill_from_history_queue = []    # does this really have to be here, with
-                                    # the first line in the per-ships loop?
+    kill_from_history_queue = []
+    new_kill_list_additions = []
 
     # clear up other potential crap
     c_queue_addition = None
@@ -69,6 +70,7 @@ while True:
                 # make the drop
                 myglobals.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " making drop @ " +
                                       str(ship.position))
+                kill_from_history_queue.append(ship.id)
 
                 # now we've got to wipe that from the current_assignments
                 # to make sure that it's properly reassigned the next time
@@ -78,16 +80,6 @@ while True:
                                           "invalid state (no current_assignments entry)!")  # should throw exception
 
                 continue
-
-            # pretty sure this is unreachable code
-            #elif not ship.is_full and \
-            #        myglobals.Variables.current_assignments[ship.id].secondary_mission == myglobals.Missions.busy \
-            #        and game_map[ship.position].halite_amount > 0:
-            #    # continuing mining here
-            #    myglobals.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **continuing mining** @ " +
-            #                          str(ship.position))
-            #    command_queue.append(ship.stay_still())
-            #    continue
 
             elif game_map.normalize(myglobals.Variables.current_assignments[ship.id].destination) == ship.position \
                     and myglobals.Variables.current_assignments[ship.id].primary_mission != \
@@ -114,6 +106,7 @@ while True:
                 # drop off the fucking halite HERE then, if nothing else
                 myglobals.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " DROP the BONE")
                 kill_from_history_queue.append(ship.id)
+
                 continue
 
         except KeyError as ke:
@@ -122,24 +115,25 @@ while True:
 
         myglobals.Misc.loggit('core', 'debug', " - found and processed ship: " + str(ship.id))
 
-    # TODO: change hardcoded 200 below into a percentage of game turns
-    if game.turn_number <= 200 and me.halite_amount > myglobals.Const.Enough_Ore_To_Spawn and \
+    if game.turn_number <= (constants.MAX_TURNS / 2) and me.halite_amount > myglobals.Const.Enough_Ore_To_Spawn and \
             not game_map[me.shipyard].is_occupied:
         myglobals.Misc.loggit('core', 'debug', " - spawning ship")
         command_queue.append(me.shipyard.spawn())
 
     # maintain the current_assignments as best we can here...
-    # history.ShipHistory.prune_current_assignments(me)
+    myglobals.Misc.loggit('core', 'debug', "Killing from history for reassignment: " + str(kill_from_history_queue))
+
+    # we've already got ships in the kill queue that require reassignment,
+    # now we just need to add the ones that've been destroyed
+    new_kill_list_additions = history.ShipHistory.prune_current_assignments(me)
+    myglobals.Misc.loggit('core', 'debug', "Killing from history due to ship 8-x: " + str(new_kill_list_additions))
+    if new_kill_list_additions is not None:
+        kill_from_history_queue += new_kill_list_additions
+
     for shid in kill_from_history_queue:
         # wipe away the dingleberries
         myglobals.Misc.loggit('core', 'debug', "Killing history of shid: " + str(shid))
-        myglobals.Variables.current_assignments.pop(shid)
-
-    try:
-        for shid in history.ShipHistory.prune_current_assignments(me):
-            myglobals.Variables.current_assignments.pop(shid)
-    except:
-        pass
+        myglobals.Variables.current_assignments.pop(shid, None)
 
     turn += 1
     game.end_turn(command_queue)
