@@ -126,8 +126,11 @@ class Core:
                 myglobals.Variables.current_assignments[ship.id].primary_mission = myglobals.Missions.get_distance
                 myglobals.Variables.current_assignments[ship.id].secondary_mission = myglobals.Missions.in_transit
                 myglobals.Variables.current_assignments[ship.id].turnstamp = turn
-                myglobals.Variables.current_assignments[ship.id].destination = \
-                    seek_n_nav.Nav.generate_random_offset(ship.position)
+
+                tmp_destination = seek_n_nav.Nav.generate_random_offset(ship.position)
+                while tmp_destination == me.shipyard.position:
+                    tmp_destination = seek_n_nav.Nav.generate_random_offset(ship.position)
+                myglobals.Variables.current_assignments[ship.id].destination = tmp_destination
 
                 c_queue.append(ship.move(game_map.naive_navigate(ship,
                                                                  myglobals.Variables.current_assignments[ship.id].

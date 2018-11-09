@@ -114,7 +114,7 @@ while True:
 
             except KeyError as ke:
                 # set everybody to mining, first of all
-                command_queue.append(seek_n_nav.StartUp.get_initial_minimum_distance(ship, turn, ke))
+                command_queue.append(seek_n_nav.StartUp.get_initial_minimum_distance(ship, me, turn, ke))
 
             myglobals.Misc.loggit('core', 'debug', " - found and processed ship: " + str(ship.id))
 
