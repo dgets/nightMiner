@@ -72,5 +72,21 @@ class MapChunk:
                     if self.has_dropoff is None:
                         self.has_dropoff = False
 
-    def mark_devoid_cells(self, ship):
-        
+    def mark_devoid_cells(self, ship, map):
+        """
+        Method goes through the cells in this particular chunk and, for this
+        ship, marks them as 'unsafe' when they have no halite, in order to
+        make naive_navigate() keep us in halite laden squares.
+
+        NOTE: There will have to be a backup when no halite is present to give
+        a path to percolate through.
+
+        :param ship:
+        :param map:
+        :return:
+        """
+        for x in range(self.x_start, self.x_start + self.Width - 1):
+            for y in range(self.y_start, self.y_start - self.Height):
+                if map[Position(x, y)].halite_amount == 0:
+                    map[Position(x, y)].mark_unsafe(ship)
+
