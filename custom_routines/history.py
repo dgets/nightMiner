@@ -61,8 +61,8 @@ class ShipHistory:
 
     def __str__(self):
         return "ship ID: " + str(self.id) + ", location: " + str(self.location) + ", destination: " \
-               + str(self.destination) + ", turnstamp set: " + str(self.turnstamp) + ", current_mission: " + \
-               self.current_mission + ", primary_mission: " + self.primary_mission
+               + str(self.destination) + ", turnstamp set: " + str(self.turnstamp) + ", secondary_mission: " + \
+               str(self.secondary_mission) + ", primary_mission: " + str(self.primary_mission)
 
     @staticmethod
     def prune_current_assignments(me):
