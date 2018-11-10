@@ -69,7 +69,8 @@ class Nav:
         next_dest = game_map[ship.position.directional_offset(direction)]
         if next_dest.is_empty:
             myglobals.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " one step at a time...")
-            return ship.move(direction)
+            #return ship.move(direction)
+            return ship.move(game_map.naive_navigate(ship, next_dest.position))
         else:
             # I guess we'll just wait for now
             myglobals.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " avoiding collision at " +

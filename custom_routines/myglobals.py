@@ -25,6 +25,7 @@ class Const:
         'perimeter_search': False,  # this will almost certainly be phased out
         'save_state': True,
         'pruning': False,
+        'scuttle': True,
     }
 
     Enough_Ore_To_Spawn = 2000
