@@ -11,7 +11,7 @@ that the name doesn't have to have anything to do with my name in it, this
 time around.  ;)
 """
 
-import hlt
+from hlt import constants
 from custom_routines import myglobals, history, seek_n_nav, core_processing
 
 # --==++** GAME BEGIN **++==--
@@ -20,6 +20,8 @@ game = core_processing.Core.original_preprocessing()
 #max_turns = constants['MAX_TURNS']
 #myglobals.Misc.loggit('core', 'debug', "max_turns set to: " + str(max_turns)
 #myglobals.Misc.loggit('core', 'debug', "Max_Scuttle_Time set to: " + str(myglobals.Const.Max_Scuttle_Time))
+
+Max_Scuttle_Time = constants.MAX_TURNS - (40 * 2)
 
 # for turnstamps
 turn = 0
@@ -42,10 +44,10 @@ while True:
     c_queue_addition = None
 
     myglobals.Misc.loggit('core', 'debug', " Making sure turn (" + str(turn) + " <= " +
-                          str(400 - game_map.width - (len(me.get_ships()) * 2)) + ")")
+                          str(Max_Scuttle_Time - (len(me.get_ships()) * 2)) + ")")
 
-    # if not turn > (myglobals.Const.Max_Scuttle_Time - (len(me.get_ships) * 2)):    # until myglobals issues are fixed
-    if not turn > (500 - game_map.width - (len(me.get_ships()) * 2)):
+    if not turn > (Max_Scuttle_Time - (len(me.get_ships()) * 2)):    # until myglobals issues are fixed
+    #if not turn > (500 - game_map.width - (len(me.get_ships()) * 2)):
         # we're not in the scuttle time crunch yet
         for ship in me.get_ships():
             kill_from_history_queue = []

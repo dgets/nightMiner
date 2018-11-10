@@ -104,6 +104,20 @@ class Core:
             myglobals.Misc.loggit('core', 'debug', " -* ship.id: " + str(ship.id) + " **WTF**  ship history dump: " +
                                   str(myglobals.Variables.current_assignments[ship.id]) + "; full ship dump: " +
                                   str(ship))
+            myglobals.Variables.current_assignments[ship.id].location = ship.position
+            myglobals.Variables.current_assignments[ship.id].destination = seek_n_nav.Nav.generate_random_offset(
+                ship.position
+            )
+            myglobals.Variables.current_assignments[ship.id].turnstamp = turn
+            myglobals.Variables.current_assignments[ship.id].primary_mission = myglobals.Missions.mining
+            myglobals.Variables.current_assignments[ship.id].secondary_mission = myglobals.Missions.in_transit
+            #myglobals.Variables.current_assignments[ship.id] = { 'id': ship.id,
+            #                                                     'location': ship.position,
+            #                                                     'destination': seek_n_nav.Nav.
+            #                                                         generate_random_offset(ship.position),
+            #                                                     'turnstamp': turn,
+            #                                                     'primary_mission': myglobals.Missions.mining,
+            #                                                     'secondary_mission': myglobals.Missions.in_transit }
             return ship.stay_still()
 
     @staticmethod
