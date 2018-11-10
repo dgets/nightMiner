@@ -13,6 +13,7 @@ from enum import Enum
 
 from hlt import Direction
 
+
 class Const:
     """
     global constants
@@ -24,12 +25,19 @@ class Const:
         'perimeter_search': False,  # this will almost certainly be phased out
         'save_state': True,
         'pruning': False,
+        'scuttle': True,
     }
 
     Enough_Ore_To_Spawn = 2000
     Initial_Scoot_Distance = 5
     Max_Chunk_Width = Initial_Scoot_Distance
     Max_Chunk_Height = Initial_Scoot_Distance
+    #Max_Scuttle_Time = constants.MAX_TURNS - (Game.game_map.width * 2)
+    #Max_Scuttle_Time = constants.MAX_TURNS - (40 * 2)  # until above works
+    # NOTE: the above will need to have the # of living ships * 2 added to it,
+    # so that they can all get in to dropoff and get out of each others way,
+    # so long as we're only dealing with the one shipyard & no dropoffs
+
 
 class Variables:
     """
@@ -50,6 +58,7 @@ class Missions(Enum):
     defense = 5
     offense = 6
     busy = 7
+    scuttle = 8
 
 
 class Misc:

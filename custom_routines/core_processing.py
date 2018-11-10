@@ -23,7 +23,7 @@ class Core:
     @staticmethod
     def original_preprocessing():
         """
-        Computationally expensive and/or other preprocessing that nees to be
+        Computationally expensive and/or other preprocessing that needs to be
         taken care of before the primary per-turn loop.
 
         :return: game (a local version of hlt.Game()'s return)
@@ -104,4 +104,69 @@ class Core:
             myglobals.Misc.loggit('core', 'debug', " -* ship.id: " + str(ship.id) + " **WTF**  ship history dump: " +
                                   str(myglobals.Variables.current_assignments[ship.id]) + "; full ship dump: " +
                                   str(ship))
+            myglobals.Variables.current_assignments[ship.id].location = ship.position
+            myglobals.Variables.current_assignments[ship.id].destination = seek_n_nav.Nav.generate_random_offset(
+                ship.position
+            )
+            myglobals.Variables.current_assignments[ship.id].turnstamp = turn
+            myglobals.Variables.current_assignments[ship.id].primary_mission = myglobals.Missions.mining
+            myglobals.Variables.current_assignments[ship.id].secondary_mission = myglobals.Missions.in_transit
+            #myglobals.Variables.current_assignments[ship.id] = { 'id': ship.id,
+            #                                                     'location': ship.position,
+            #                                                     'destination': seek_n_nav.Nav.
+            #                                                         generate_random_offset(ship.position),
+            #                                                     'turnstamp': turn,
+            #                                                     'primary_mission': myglobals.Missions.mining,
+            #                                                     'secondary_mission': myglobals.Missions.in_transit }
             return ship.stay_still()
+
+    @staticmethod
+    def scuttle_for_finish(me, game_map, turn):
+        # NOTE: this routine will not work in conjunction with the other
+        # normal ship in me.get_ships() game routine; command_queue will
+        # get double orders for each ship if this happens.  It must be
+        # one or the other
+        c_queue = []
+
+        for ship in me.get_ships():
+            if myglobals.Variables.current_assignments[ship.id].primary_mission == myglobals.Missions.get_distance:
+                myglobals.Misc.loggit('scuttle', 'info', " - ship.id: " + str(ship.id) + " getting away from shipyard")
+                c_queue.append(ship.move(game_map.naive_navigate(ship,
+                                                                 myglobals.Variables.current_assignments[ship.id].
+                                                                 destination)))
+
+            elif ship.position == me.shipyard.position and \
+                    myglobals.Variables.current_assignments[ship.id].primary_mission != myglobals.Missions.get_distance:
+                # get away from the drop
+                myglobals.Misc.loggit('scuttle', 'info', " - ship.id: " + str(ship.id) + " setting get_distance from " +
+                                      "shipyard")
+                myglobals.Variables.current_assignments[ship.id].primary_mission = myglobals.Missions.get_distance
+                myglobals.Variables.current_assignments[ship.id].secondary_mission = myglobals.Missions.in_transit
+                myglobals.Variables.current_assignments[ship.id].turnstamp = turn
+
+                tmp_destination = seek_n_nav.Nav.generate_random_offset(ship.position)
+                while tmp_destination == me.shipyard.position:
+                    tmp_destination = seek_n_nav.Nav.generate_random_offset(ship.position)
+                myglobals.Variables.current_assignments[ship.id].destination = tmp_destination
+
+                c_queue.append(ship.move(game_map.naive_navigate(ship,
+                                                                 myglobals.Variables.current_assignments[ship.id].
+                                                                 destination)))
+            elif myglobals.Variables.current_assignments[ship.id].primary_mission != myglobals.Missions.scuttle:
+                myglobals.Misc.loggit('scuttle', 'info', " - ship.id: " + str(ship.id) + " heading back to drop")
+                # head back to the drop, it's scuttle time
+                myglobals.Variables.current_assignments[ship.id].primary_mission = myglobals.Missions.scuttle
+                myglobals.Variables.current_assignments[ship.id].secondary_mission = myglobals.Missions.in_transit
+                myglobals.Variables.current_assignments[ship.id].turnstamp = turn
+                myglobals.Variables.current_assignments[ship.id].destination = me.shipyard.position
+
+                c_queue.append(ship.move(game_map.naive_navigate(ship, me.shipyard.position)))
+            else:
+                # already scuttling, keep it up
+                myglobals.Misc.loggit('scuttle', 'info', " - ship.id: " + str(ship.id) + " en route back to drop")
+                c_queue.append(ship.move(game_map.naive_navigate(ship, me.shipyard.position)))
+
+            # after we try this with naive_navigate we'll give it a shot with
+            # an implementation using seek_n_nav's less_dumb_move(), as well
+
+        return c_queue

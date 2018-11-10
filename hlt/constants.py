@@ -4,6 +4,19 @@ They come from game engine and changing them has no effect.
 They are strictly informational.
 """
 
+SHIP_COST: int = None
+DROPOFF_COST: int = None
+MAX_HALITE: int = None
+MAX_TURNS: int = None
+EXTRACT_RATIO: int = None
+MOVE_COST_RATIO: int = None
+INSPIRATION_ENABLED = None
+INSPIRATION_RADIUS = None
+INSPIRATION_SHIP_COUNT = None
+INSPIRED_EXTRACT_RATIO = None
+INSPIRED_BONUS_MULTIPLIER = None
+INSPIRED_MOVE_COST_RATIO = None
+
 
 def load_constants(constants):
     """

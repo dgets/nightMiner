@@ -82,10 +82,17 @@ class ShipHistory:
             myglobals.Misc.loggit('pruning', 'info', " - pruning current_assignments, if necessary (ship: " +
                                   str(ship_history_key) + ")")
 
-            if not myglobals.Variables.current_assignments[ship_history_key].is_alive(me):
+            #if not myglobals.Variables.current_assignments[ship_history_key].is_alive(me):
+            try:
+                if me.get_ship(ship_history_key) is None:
+                    # wipe entry
+                    myglobals.Misc.loggit('pruning', 'info', " -* wiping ship.id: " + str(ship_history_key) +
+                                          " from current_assignments due to its demise")
+                    shids.append(ship_history_key)
+            except:
                 # wipe entry
                 myglobals.Misc.loggit('pruning', 'info', " -* wiping ship.id: " + str(ship_history_key) +
                                       " from current_assignments due to its demise")
                 shids.append(ship_history_key)
-
+                
             return shids

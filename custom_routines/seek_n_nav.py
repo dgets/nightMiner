@@ -69,7 +69,8 @@ class Nav:
         next_dest = game_map[ship.position.directional_offset(direction)]
         if next_dest.is_empty:
             myglobals.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " one step at a time...")
-            return ship.move(direction)
+            #return ship.move(direction)
+            return ship.move(game_map.naive_navigate(ship, next_dest.position))
         else:
             # I guess we'll just wait for now
             myglobals.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " avoiding collision at " +
@@ -94,12 +95,13 @@ class Nav:
 
 class StartUp:
     @staticmethod
-    def get_initial_minimum_distance(ship, turn, key_exception):
+    def get_initial_minimum_distance(ship, me, turn, key_exception):
         """
         Returns the command_queue data for the ship obtaining initial minimum
         distance in order to avoid clogging the shipyard access.
 
         :param ship:
+        :param me:
         :param turn:
         :param key_exception:
         :return:
@@ -109,11 +111,12 @@ class StartUp:
                                   " to mining**")
         myglobals.Misc.loggit('core', 'debug', " -* ke: " + str(key_exception))
 
+        tmp_destination = seek_n_nav.Nav.generate_random_offset(ship.position)
+        while tmp_destination == me.shipyard.position:
+            tmp_destination = seek_n_nav.Nav.generate_random_offset(ship.position)
+
         myglobals.Variables.current_assignments[ship.id] = history.ShipHistory(ship.id, ship.position,
-                                                                               seek_n_nav.Nav.
-                                                                               generate_random_offset(
-                                                                                   ship.position
-                                                                               ), turn,
+                                                                               tmp_destination, turn,
                                                                                myglobals.Missions.mining,
                                                                                myglobals.Missions.in_transit)
 
