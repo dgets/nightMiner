@@ -130,13 +130,16 @@ class Core:
 
         for ship in me.get_ships():
             if myglobals.Variables.current_assignments[ship.id].primary_mission == myglobals.Missions.get_distance:
+                myglobals.Misc.loggit('scuttle', 'info', " - ship.id: " + str(ship.id) + " getting away from shipyard")
                 c_queue.append(ship.move(game_map.naive_navigate(ship,
                                                                  myglobals.Variables.current_assignments[ship.id].
                                                                  destination)))
 
-            elif ship.halite_amount < 100 and myglobals.Variables.current_assignments[ship.id].primary_mission != \
-                    myglobals.Missions.get_distance:
+            elif ship.position == me.shipyard.position and \
+                    myglobals.Variables.current_assignments[ship.id].primary_mission != myglobals.Missions.get_distance:
                 # get away from the drop
+                myglobals.Misc.loggit('scuttle', 'info', " - ship.id: " + str(ship.id) + " setting get_distance from " +
+                                      "shipyard")
                 myglobals.Variables.current_assignments[ship.id].primary_mission = myglobals.Missions.get_distance
                 myglobals.Variables.current_assignments[ship.id].secondary_mission = myglobals.Missions.in_transit
                 myglobals.Variables.current_assignments[ship.id].turnstamp = turn
@@ -150,14 +153,17 @@ class Core:
                                                                  myglobals.Variables.current_assignments[ship.id].
                                                                  destination)))
             elif myglobals.Variables.current_assignments[ship.id].primary_mission != myglobals.Missions.scuttle:
+                myglobals.Misc.loggit('scuttle', 'info', " - ship.id: " + str(ship.id) + " heading back to drop")
                 # head back to the drop, it's scuttle time
                 myglobals.Variables.current_assignments[ship.id].primary_mission = myglobals.Missions.scuttle
                 myglobals.Variables.current_assignments[ship.id].secondary_mission = myglobals.Missions.in_transit
                 myglobals.Variables.current_assignments[ship.id].turnstamp = turn
+                myglobals.Variables.current_assignments[ship.id].destination = me.shipyard.position
 
                 c_queue.append(ship.move(game_map.naive_navigate(ship, me.shipyard.position)))
             else:
                 # already scuttling, keep it up
+                myglobals.Misc.loggit('scuttle', 'info', " - ship.id: " + str(ship.id) + " en route back to drop")
                 c_queue.append(ship.move(game_map.naive_navigate(ship, me.shipyard.position)))
 
             # after we try this with naive_navigate we'll give it a shot with
