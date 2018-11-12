@@ -67,6 +67,14 @@ class Core:
         :return: command_queue addition
         """
 
+        # maybe if things end up taking too long for processing at some point
+        # we can add a conditional here to see if it's out of bounds before
+        # invoking game_map.normalize() here; not sure how much of a diff it'd
+        # really make
+        glo.Variables.current_assignments[ship.id].destination = game_map.normalize(
+            glo.Variables.current_assignments[ship.id].destination
+        )
+
         # we've mined all of the halite, or someone else got to it
         # before we did here, bounce a random square
         if ship.halite_amount < 900 and \
@@ -76,7 +84,7 @@ class Core:
 
         # continuing transit for this ship to its final destination
         elif glo.Variables.current_assignments[ship.id].secondary_mission == glo.Missions.in_transit \
-                and game_map.normalize(glo.Variables.current_assignments[ship.id].destination) != ship.position:
+                and glo.Variables.current_assignments[ship.id].destination != ship.position:
             return seek_n_nav.Nav.scoot(ship, game_map)
 
         # we've fully transited and are in the spot where we wanted to mine
@@ -104,7 +112,8 @@ class Core:
                                   str(glo.Variables.current_assignments[ship.id]) + "; full ship dump: " +
                                   str(ship))
             glo.Variables.current_assignments[ship.id].set_ldps(ship.position,
-                                                                seek_n_nav.Nav.generate_random_offset(ship.position),
+                                                                seek_n_nav.Nav.
+                                                                generate_profitable_offset(ship, game_map),
                                                                 glo.Missions.mining, glo.Missions.in_transit)
             glo.Variables.current_assignments[ship.id].turnstamp = turn
             return ship.stay_still()
@@ -133,9 +142,9 @@ class Core:
                 glo.Variables.current_assignments[ship.id].secondary_mission = glo.Missions.in_transit
                 glo.Variables.current_assignments[ship.id].turnstamp = turn
 
-                tmp_destination = seek_n_nav.Nav.generate_random_offset(ship.position)
+                tmp_destination = seek_n_nav.Nav.generate_profitable_offset(ship, game_map)
                 while tmp_destination == me.shipyard.position:
-                    tmp_destination = seek_n_nav.Nav.generate_random_offset(ship.position)
+                    tmp_destination = seek_n_nav.Nav.profitable_profitable_offset(ship.position, game_map)
                 glo.Variables.current_assignments[ship.id].destination = tmp_destination
 
                 c_queue.append(ship.move(game_map.naive_navigate(ship,

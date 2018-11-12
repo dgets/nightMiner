@@ -25,7 +25,7 @@ game = core_processing.Core.original_preprocessing()
 Max_Scuttle_Time = constants.MAX_TURNS - (40 * 2)
 
 # for turnstamps
-turn = 0
+turn: int = 0
 
 # --==++** PRIMARY GAME LOOP **++==--
 while True:
@@ -122,7 +122,7 @@ while True:
 
             except KeyError as ke:
                 # set everybody to mining, first of all
-                command_queue.append(seek_n_nav.StartUp.get_initial_minimum_distance(ship, me, turn, ke))
+                command_queue.append(seek_n_nav.StartUp.get_initial_minimum_distance(ship, me, game_map, turn, ke))
 
             glo.Misc.loggit('core', 'debug', " - found and processed ship: " + str(ship.id))
 

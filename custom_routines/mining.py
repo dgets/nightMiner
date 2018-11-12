@@ -5,12 +5,9 @@ started 9nov18
 
 Mining algorithm internals.
 """
-import random
 
-from . import seek_n_nav
+from . import seek_n_nav, analytics
 from . import myglobals as glo
-
-from hlt import Direction
 
 
 class Mine:
@@ -34,8 +31,9 @@ class Mine:
         glo.Misc.log_w_shid('seek', 'debug', ship.id, " ShipHistory-->" +
                             str(glo.Variables.current_assignments[ship.id]))
 
-        rnd_dir = random.choice([Direction.North, Direction.South, Direction.East, Direction.West])
-        glo.Variables.current_assignments[ship.id].destination = ship.position.directional_offset(rnd_dir)
+        new_dir = analytics.HaliteAnalysis.find_best_dir(ship, game_map)
+        # random.choice([Direction.North, Direction.South, Direction.East, Direction.West])
+        glo.Variables.current_assignments[ship.id].destination = game_map[ship.position.directional_offset(new_dir)]
         glo.Variables.current_assignments[ship.id].secondary_mission = glo.Missions.in_transit
         glo.Variables.current_assignments[ship.id].turnstamp = turn
 

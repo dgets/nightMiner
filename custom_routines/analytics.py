@@ -6,7 +6,7 @@ started 8nov18
 Class will hold different (dumb) analytic routines.
 """
 
-from hlt import Position
+from hlt import Position, Direction
 
 from . import myglobals as glo
 
@@ -26,7 +26,7 @@ class MapChunk:
     y_start = -1
 
     # gotta use the list comprehension for arrays here I guess
-    cell_data = [[0 for x in range(Width)] for y in range(Height)]
+    cell_data = [[0 for x in range(glo.Const.Max_Chunk_Width)] for y in range(glo.Const.Max_Chunk_Height)]
 
     # NOTE: we're not going to be using arrays to hold multiple shipyards or
     # dropoff points at this point, so if there's more than one we'll just
@@ -95,3 +95,41 @@ class MapChunk:
     def create_centered_chunk(me, ship, map):
         return MapChunk(me, map, ship.position.x - (MapChunk.Width % 2), ship.position.y - (MapChunk.Height % 2))
 
+
+class HaliteAnalysis:
+    """
+    Different static methods for analyzing the halite content of the map in
+    general and in other non-MapChunk situations.
+    """
+    @staticmethod
+    def find_best_dir(ship, game_map):
+        """
+        Method will use the ship's position to scan the 4 cardinal directions
+        for the most profitable halite move.  Will return the direction.  Note
+        that this will be taking into account whether or not that cell is
+        currently occupied.
+
+        :param ship:
+        :param game_map:
+        :return: Direction
+        """
+        halite_best = 0
+        best_dir = None
+
+        glo.Misc.log_w_shid('seek', 'info', ship.id, "Entered analytics.HaliteAnalysis.find_best_dir()")
+
+        for da_way in Direction.get_all_cardinals():
+            glo.Misc.log_w_shid('seek', 'debug', ship.id, " - considering " +
+                                str(ship.position.directional_offset(da_way)))
+
+            if game_map[ship.position.directional_offset(da_way)].halite_amount > halite_best and \
+                    game_map[ship.position.directional_offset(da_way)].is_empty:
+                glo.Misc.log_w_shid('seek', 'debug', ship.id, " - * currently found " +
+                                    str(ship.position.directional_offset(da_way)) + " to be best w/" +
+                                    str(game_map[ship.position.directional_offset(da_way)].halite_amount) +
+                                    " halite & empty")
+
+                halite_best = game_map[ship.position.directional_offset(da_way)].halite_amount
+                best_dir = da_way
+
+        return best_dir

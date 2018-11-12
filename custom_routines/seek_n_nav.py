@@ -13,7 +13,7 @@ import random
 
 from hlt import Position, Direction
 
-from . import history, seek_n_nav
+from . import history, analytics
 from . import myglobals as glo
 
 
@@ -25,6 +25,8 @@ class Nav:
         of current_location, and returns it for navigation to a new location
         w/in that distance
 
+        TODO: Get collision detection here
+
         :param current_position: Position
         :return: new Position destination
         """
@@ -33,6 +35,23 @@ class Nav:
         y_offset = random.randint(-glo.Const.Initial_Scoot_Distance, glo.Const.Initial_Scoot_Distance)
 
         return Position(current_position.x + x_offset, current_position.y + y_offset)
+
+    @staticmethod
+    def generate_profitable_offset(ship, game_map):
+        """
+        Finds the most profitable direction to move in, or random if none are
+        available.
+
+        :param ship:
+        :return:
+        """
+
+        new_dir = analytics.HaliteAnalysis.find_best_dir(ship, game_map)
+
+        if new_dir is not None:
+            return ship.position.directional_offset(new_dir)
+        else:
+            return Nav.generate_random_offset(ship.position)
 
     @staticmethod
     def return_halite_to_shipyard(ship, me, game_map, turn):
@@ -68,6 +87,7 @@ class Nav:
         :return:
         """
         next_dest = game_map[ship.position.directional_offset(direction)]
+
         if next_dest.is_empty:
             glo.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " one step at a time...")
             #return ship.move(direction)
@@ -96,7 +116,7 @@ class Nav:
 
 class StartUp:
     @staticmethod
-    def get_initial_minimum_distance(ship, me, turn, key_exception):
+    def get_initial_minimum_distance(ship, me, game_map, turn, key_exception):
         """
         Returns the command_queue data for the ship obtaining initial minimum
         distance in order to avoid clogging the shipyard access.
@@ -109,16 +129,16 @@ class StartUp:
         """
 
         glo.Misc.loggit('core', 'debug', " - fell into except; **setting new ship id: " + str(ship.id) +
-                                  " to mining**")
+                        " to mining**")
         glo.Misc.loggit('core', 'debug', " -* ke: " + str(key_exception))
 
-        tmp_destination = seek_n_nav.Nav.generate_random_offset(ship.position)
+        tmp_destination = Nav.generate_profitable_offset(ship, game_map)
         while tmp_destination == me.shipyard.position:
-            tmp_destination = seek_n_nav.Nav.generate_random_offset(ship.position)
+            tmp_destination = Nav.generate_profitable_offset(ship, game_map)
 
         glo.Variables.current_assignments[ship.id] = history.ShipHistory(ship.id, ship.position,
-                                                                               tmp_destination, turn,
-                                                                               glo.Missions.mining,
-                                                                               glo.Missions.in_transit)
+                                                                         tmp_destination, turn,
+                                                                         glo.Missions.mining,
+                                                                         glo.Missions.in_transit)
 
         return ship.move(random.choice([Direction.North, Direction.South, Direction.East, Direction.West]))
