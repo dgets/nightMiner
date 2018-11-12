@@ -54,6 +54,8 @@ while True:
             kill_from_history_queue = []
 
             glo.Misc.loggit('core', 'info', " - processing ship.id: " + str(ship.id))
+            glo.Misc.log_w_shid('seek', 'debug', ship.id, "Present cell's halite: " +
+                                str(game_map[ship.position].halite_amount))
             try:
                 # if this is a new ship, we'll be in the except, below
                 if glo.Variables.current_assignments[ship.id].primary_mission == glo.Missions.mining:
