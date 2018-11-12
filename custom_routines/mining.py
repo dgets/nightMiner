@@ -31,11 +31,16 @@ class Mine:
         """
 
         glo.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **randomly wandering**")
+        glo.Misc.log_w_shid('seek', 'debug', ship.id, " ShipHistory-->" +
+                            str(glo.Variables.current_assignments[ship.id]))
+
         rnd_dir = random.choice([Direction.North, Direction.South, Direction.East, Direction.West])
-        glo.Variables.current_assignments[ship.id].destination = \
-            ship.position.directional_offset(rnd_dir)
+        glo.Variables.current_assignments[ship.id].destination = ship.position.directional_offset(rnd_dir)
         glo.Variables.current_assignments[ship.id].secondary_mission = glo.Missions.in_transit
         glo.Variables.current_assignments[ship.id].turnstamp = turn
+
+        glo.Misc.log_w_shid('seek', 'debug', ship.id, " ShipHistory after processing-->" +
+                            str(glo.Variables.current_assignments[ship.id]))
 
         return seek_n_nav.Nav.less_dumb_move(ship, glo.Misc.r_dir_choice(), game_map)
 

@@ -92,9 +92,9 @@ class Misc:
     def log_w_shid(debugging_type, log_level, id, log_message):
         if debugging_type == 'any' or Const.DEBUGGING[debugging_type]:
             if log_level == 'debug' or log_level == 'any':
-                logging.debug(" - ship.id" + str(id) + ": " + log_message)
+                logging.debug(" - ship.id: " + str(id) + " " + log_message)
             elif log_level == 'info' or log_level == 'any':
-                logging.info(" - ship.id" + str(id) + ": " + log_message)
+                logging.info(" - ship.id: " + str(id) + " " + log_message)
             else:
                 raise RuntimeError("Log level specified is not implemented in myglobals.Misc.log_w_shid()")
 

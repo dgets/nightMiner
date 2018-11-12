@@ -16,6 +16,7 @@ from hlt import Position, Direction
 from . import history, seek_n_nav
 from . import myglobals as glo
 
+
 class Nav:
     @staticmethod
     def generate_random_offset(current_position):
