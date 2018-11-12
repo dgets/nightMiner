@@ -18,9 +18,9 @@ from custom_routines import myglobals as glo
 # --==++** GAME BEGIN **++==--
 
 game = core_processing.Core.original_preprocessing()
-#max_turns = constants['MAX_TURNS']
-#glo.Misc.loggit('core', 'debug', "max_turns set to: " + str(max_turns)
-#glo.Misc.loggit('core', 'debug', "Max_Scuttle_Time set to: " + str(glo.Const.Max_Scuttle_Time))
+# max_turns = constants['MAX_TURNS']
+# glo.Misc.loggit('core', 'debug', "max_turns set to: " + str(max_turns)
+# glo.Misc.loggit('core', 'debug', "Max_Scuttle_Time set to: " + str(glo.Const.Max_Scuttle_Time))
 
 Max_Scuttle_Time = constants.MAX_TURNS - (40 * 2)
 
@@ -47,8 +47,8 @@ while True:
     glo.Misc.loggit('core', 'debug', " Making sure turn (" + str(turn) + " <= " +
                           str(Max_Scuttle_Time - (len(me.get_ships()) * 2)) + ")")
 
+    # if not turn > (500 - game_map.width - (len(me.get_ships()) * 2)):
     if not turn > (Max_Scuttle_Time - (len(me.get_ships()) * 2)):    # until glo issues are fixed
-    #if not turn > (500 - game_map.width - (len(me.get_ships()) * 2)):
         # we're not in the scuttle time crunch yet
         for ship in me.get_ships():
             kill_from_history_queue = []
@@ -58,7 +58,7 @@ while True:
                 # if this is a new ship, we'll be in the except, below
                 if glo.Variables.current_assignments[ship.id].primary_mission == glo.Missions.mining:
                     glo.Misc.loggit('core', 'debug', " - ship.id " + str(ship.id) +
-                                          " in primary mining conditional")
+                                    " in primary mining conditional")
                     c_queue_addition = core_processing.Core.primary_mission_mining(ship, game_map, me, turn)
 
                     if c_queue_addition is not None:

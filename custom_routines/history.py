@@ -64,6 +64,43 @@ class ShipHistory:
                + str(self.destination) + ", turnstamp set: " + str(self.turnstamp) + ", secondary_mission: " + \
                str(self.secondary_mission) + ", primary_mission: " + str(self.primary_mission)
 
+    def set_ldps(self, loc, dest, pri, sec):
+        """
+        Set the current ship's location, destination, primary, and secondary
+        missions.
+
+        :param loc: ship's current location
+        :param dest: ship's destination
+        :param pri: ship's primary mission
+        :param sec:   "  secondary mission
+        :return:
+        """
+
+        self.location = loc
+        self.destination = dest
+        self.primary_mission = pri
+        self.secondary_mission = sec
+
+    def set_loc(self, loc):
+        """
+        Set the location of the current ship.
+
+        :param loc: ship's current location
+        :return:
+        """
+
+        self.location = loc
+
+    def set_dest(self, dest):
+        """
+        Set the destination of the current ship.
+
+        :param dest: ship's new destination
+        :return:
+        """
+
+        self.destination = dest
+
     @staticmethod
     def prune_current_assignments(me):
         """
