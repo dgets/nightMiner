@@ -8,7 +8,7 @@ Class will hold different (dumb) analytic routines.
 
 from hlt import Position
 
-from . import myglobals
+from . import myglobals as glo
 
 
 class MapChunk:
@@ -19,8 +19,8 @@ class MapChunk:
     locally, etc.
     """
 
-    Width = myglobals.Const.Max_Chunk_Width
-    Height = myglobals.Const.Max_Chunk_Height
+    Width = glo.Const.Max_Chunk_Width
+    Height = glo.Const.Max_Chunk_Height
 
     x_start = -1
     y_start = -1

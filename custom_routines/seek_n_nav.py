@@ -13,14 +13,14 @@ import random
 
 from hlt import Position, Direction
 
-from . import myglobals, history, seek_n_nav
-
+from . import history, seek_n_nav
+from . import myglobals as glo
 
 class Nav:
     @staticmethod
     def generate_random_offset(current_position):
         """
-        Generates a random position w/in myglobals.Const.Initial_Scoot_Distance
+        Generates a random position w/in glo.Const.Initial_Scoot_Distance
         of current_location, and returns it for navigation to a new location
         w/in that distance
 
@@ -28,8 +28,8 @@ class Nav:
         :return: new Position destination
         """
 
-        x_offset = random.randint(-myglobals.Const.Initial_Scoot_Distance, myglobals.Const.Initial_Scoot_Distance)
-        y_offset = random.randint(-myglobals.Const.Initial_Scoot_Distance, myglobals.Const.Initial_Scoot_Distance)
+        x_offset = random.randint(-glo.Const.Initial_Scoot_Distance, glo.Const.Initial_Scoot_Distance)
+        y_offset = random.randint(-glo.Const.Initial_Scoot_Distance, glo.Const.Initial_Scoot_Distance)
 
         return Position(current_position.x + x_offset, current_position.y + y_offset)
 
@@ -45,15 +45,15 @@ class Nav:
         :param turn:
         :return:
         """
-        myglobals.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) +
+        glo.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) +
                               " **returning to shipyard** at " + str(me.shipyard.position))
 
-        myglobals.Variables.current_assignments[ship.id].primary_mission = myglobals.Missions.dropoff
-        myglobals.Variables.current_assignments[ship.id].secondary_mission = myglobals.Missions.in_transit
-        myglobals.Variables.current_assignments[ship.id].destination = me.shipyard.position
-        myglobals.Variables.current_assignments[ship.id].turnstamp = turn
+        glo.Variables.current_assignments[ship.id].primary_mission = glo.Missions.dropoff
+        glo.Variables.current_assignments[ship.id].secondary_mission = glo.Missions.in_transit
+        glo.Variables.current_assignments[ship.id].destination = me.shipyard.position
+        glo.Variables.current_assignments[ship.id].turnstamp = turn
 
-        return ship.move(game_map.naive_navigate(ship, myglobals.Variables.current_assignments[ship.id].destination))
+        return ship.move(game_map.naive_navigate(ship, glo.Variables.current_assignments[ship.id].destination))
 
     @staticmethod
     def less_dumb_move(ship, direction, game_map):
@@ -68,12 +68,12 @@ class Nav:
         """
         next_dest = game_map[ship.position.directional_offset(direction)]
         if next_dest.is_empty:
-            myglobals.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " one step at a time...")
+            glo.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " one step at a time...")
             #return ship.move(direction)
             return ship.move(game_map.naive_navigate(ship, next_dest.position))
         else:
             # I guess we'll just wait for now
-            myglobals.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " avoiding collision at " +
+            glo.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " avoiding collision at " +
                                   str(ship.position))
             return ship.stay_still()
 
@@ -86,11 +86,11 @@ class Nav:
         :param game_map:
         :return:
         """
-        myglobals.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **scooting** to " +
-                              str(myglobals.Variables.current_assignments[ship.id].destination))
+        glo.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **scooting** to " +
+                              str(glo.Variables.current_assignments[ship.id].destination))
 
         return ship.move(game_map.naive_navigate(ship,
-                                                 myglobals.Variables.current_assignments[ship.id].destination))
+                                                 glo.Variables.current_assignments[ship.id].destination))
 
 
 class StartUp:
@@ -107,17 +107,17 @@ class StartUp:
         :return:
         """
 
-        myglobals.Misc.loggit('core', 'debug', " - fell into except; **setting new ship id: " + str(ship.id) +
+        glo.Misc.loggit('core', 'debug', " - fell into except; **setting new ship id: " + str(ship.id) +
                                   " to mining**")
-        myglobals.Misc.loggit('core', 'debug', " -* ke: " + str(key_exception))
+        glo.Misc.loggit('core', 'debug', " -* ke: " + str(key_exception))
 
         tmp_destination = seek_n_nav.Nav.generate_random_offset(ship.position)
         while tmp_destination == me.shipyard.position:
             tmp_destination = seek_n_nav.Nav.generate_random_offset(ship.position)
 
-        myglobals.Variables.current_assignments[ship.id] = history.ShipHistory(ship.id, ship.position,
+        glo.Variables.current_assignments[ship.id] = history.ShipHistory(ship.id, ship.position,
                                                                                tmp_destination, turn,
-                                                                               myglobals.Missions.mining,
-                                                                               myglobals.Missions.in_transit)
+                                                                               glo.Missions.mining,
+                                                                               glo.Missions.in_transit)
 
         return ship.move(random.choice([Direction.North, Direction.South, Direction.East, Direction.West]))

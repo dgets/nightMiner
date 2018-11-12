@@ -7,7 +7,7 @@ This is going to replace what was going on in state_save.py in d4m0Turtle
 previously
 """
 
-from . import myglobals
+from . import myglobals as glo
 
 
 class ShipHistory:
@@ -64,6 +64,43 @@ class ShipHistory:
                + str(self.destination) + ", turnstamp set: " + str(self.turnstamp) + ", secondary_mission: " + \
                str(self.secondary_mission) + ", primary_mission: " + str(self.primary_mission)
 
+    def set_ldps(self, loc, dest, pri, sec):
+        """
+        Set the current ship's location, destination, primary, and secondary
+        missions.
+
+        :param loc: ship's current location
+        :param dest: ship's destination
+        :param pri: ship's primary mission
+        :param sec:   "  secondary mission
+        :return:
+        """
+
+        self.location = loc
+        self.destination = dest
+        self.primary_mission = pri
+        self.secondary_mission = sec
+
+    def set_loc(self, loc):
+        """
+        Set the location of the current ship.
+
+        :param loc: ship's current location
+        :return:
+        """
+
+        self.location = loc
+
+    def set_dest(self, dest):
+        """
+        Set the destination of the current ship.
+
+        :param dest: ship's new destination
+        :return:
+        """
+
+        self.destination = dest
+
     @staticmethod
     def prune_current_assignments(me):
         """
@@ -78,20 +115,20 @@ class ShipHistory:
 
         shids = []
 
-        for ship_history_key in myglobals.Variables.current_assignments.keys():
-            myglobals.Misc.loggit('pruning', 'info', " - pruning current_assignments, if necessary (ship: " +
+        for ship_history_key in glo.Variables.current_assignments.keys():
+            glo.Misc.loggit('pruning', 'info', " - pruning current_assignments, if necessary (ship: " +
                                   str(ship_history_key) + ")")
 
-            #if not myglobals.Variables.current_assignments[ship_history_key].is_alive(me):
+            #if not glo.Variables.current_assignments[ship_history_key].is_alive(me):
             try:
                 if me.get_ship(ship_history_key) is None:
                     # wipe entry
-                    myglobals.Misc.loggit('pruning', 'info', " -* wiping ship.id: " + str(ship_history_key) +
+                    glo.Misc.loggit('pruning', 'info', " -* wiping ship.id: " + str(ship_history_key) +
                                           " from current_assignments due to its demise")
                     shids.append(ship_history_key)
             except:
                 # wipe entry
-                myglobals.Misc.loggit('pruning', 'info', " -* wiping ship.id: " + str(ship_history_key) +
+                glo.Misc.loggit('pruning', 'info', " -* wiping ship.id: " + str(ship_history_key) +
                                       " from current_assignments due to its demise")
                 shids.append(ship_history_key)
                 
