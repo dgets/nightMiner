@@ -7,7 +7,7 @@ This is going to replace what was going on in state_save.py in d4m0Turtle
 previously
 """
 
-from . import myglobals
+from . import myglobals as glo
 
 
 class ShipHistory:
@@ -78,20 +78,20 @@ class ShipHistory:
 
         shids = []
 
-        for ship_history_key in myglobals.Variables.current_assignments.keys():
-            myglobals.Misc.loggit('pruning', 'info', " - pruning current_assignments, if necessary (ship: " +
+        for ship_history_key in glo.Variables.current_assignments.keys():
+            glo.Misc.loggit('pruning', 'info', " - pruning current_assignments, if necessary (ship: " +
                                   str(ship_history_key) + ")")
 
-            #if not myglobals.Variables.current_assignments[ship_history_key].is_alive(me):
+            #if not glo.Variables.current_assignments[ship_history_key].is_alive(me):
             try:
                 if me.get_ship(ship_history_key) is None:
                     # wipe entry
-                    myglobals.Misc.loggit('pruning', 'info', " -* wiping ship.id: " + str(ship_history_key) +
+                    glo.Misc.loggit('pruning', 'info', " -* wiping ship.id: " + str(ship_history_key) +
                                           " from current_assignments due to its demise")
                     shids.append(ship_history_key)
             except:
                 # wipe entry
-                myglobals.Misc.loggit('pruning', 'info', " -* wiping ship.id: " + str(ship_history_key) +
+                glo.Misc.loggit('pruning', 'info', " -* wiping ship.id: " + str(ship_history_key) +
                                       " from current_assignments due to its demise")
                 shids.append(ship_history_key)
                 

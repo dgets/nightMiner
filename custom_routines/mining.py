@@ -7,7 +7,8 @@ Mining algorithm internals.
 """
 import random
 
-from . import myglobals, seek_n_nav
+from . import seek_n_nav
+from . import myglobals as glo
 
 from hlt import Direction
 
@@ -29,14 +30,14 @@ class Mine:
         :return: seek_n_nav.Nav.less_dumb_move() command
         """
 
-        myglobals.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **randomly wandering**")
+        glo.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **randomly wandering**")
         rnd_dir = random.choice([Direction.North, Direction.South, Direction.East, Direction.West])
-        myglobals.Variables.current_assignments[ship.id].destination = \
+        glo.Variables.current_assignments[ship.id].destination = \
             ship.position.directional_offset(rnd_dir)
-        myglobals.Variables.current_assignments[ship.id].secondary_mission = myglobals.Missions.in_transit
-        myglobals.Variables.current_assignments[ship.id].turnstamp = turn
+        glo.Variables.current_assignments[ship.id].secondary_mission = glo.Missions.in_transit
+        glo.Variables.current_assignments[ship.id].turnstamp = turn
 
-        return seek_n_nav.Nav.less_dumb_move(ship, myglobals.Misc.r_dir_choice(), game_map)
+        return seek_n_nav.Nav.less_dumb_move(ship, glo.Misc.r_dir_choice(), game_map)
 
     @staticmethod
     def done_with_transit_now_mine(ship, turn):
@@ -47,9 +48,9 @@ class Mine:
         :param turn:
         :return: stay_still()
         """
-        myglobals.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **mining** at " +
+        glo.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **mining** at " +
                               str(ship.position))
-        myglobals.Variables.current_assignments[ship.id].secondary_mission = myglobals.Missions.busy
-        myglobals.Variables.current_assignments[ship.id].turnstamp = turn
+        glo.Variables.current_assignments[ship.id].secondary_mission = glo.Missions.busy
+        glo.Variables.current_assignments[ship.id].turnstamp = turn
 
         return ship.stay_still()
