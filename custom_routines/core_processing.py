@@ -70,10 +70,17 @@ class Core:
         # maybe if things end up taking too long for processing at some point
         # we can add a conditional here to see if it's out of bounds before
         # invoking game_map.normalize() here; not sure how much of a diff it'd
-        # really make
-        glo.Variables.current_assignments[ship.id].destination = game_map.normalize(
-            glo.Variables.current_assignments[ship.id].destination
-        )
+        # really make  -- remember that .destination may == None
+        if glo.Variables.current_assignments[ship.id].destination is not None:
+            glo.Misc.loggit('core', 'debug', " -* destination holds: " +
+                            str(glo.Variables.current_assignments[ship.id].destination))
+
+            glo.Variables.current_assignments[ship.id].destination = game_map.normalize(
+                glo.Variables.current_assignments[ship.id].destination
+            )
+        else:
+            glo.Variables.current_assignments[ship.id].destination = \
+                game_map[ship.position.directional_offset(seek_n_nav.Nav.generate_profitable_offset(ship, game_map))]
 
         # we've mined all of the halite, or someone else got to it
         # before we did here, bounce a random square
@@ -143,9 +150,10 @@ class Core:
                 glo.Variables.current_assignments[ship.id].turnstamp = turn
 
                 tmp_destination = seek_n_nav.Nav.generate_profitable_offset(ship, game_map)
-                while tmp_destination == me.shipyard.position:
+                while ship.position.directional_offset(tmp_destination) == me.shipyard.position:
                     tmp_destination = seek_n_nav.Nav.profitable_profitable_offset(ship.position, game_map)
-                glo.Variables.current_assignments[ship.id].destination = tmp_destination
+                glo.Variables.current_assignments[ship.id].destination = \
+                    ship.position.directional_offset(tmp_destination)
 
                 c_queue.append(ship.move(game_map.naive_navigate(ship,
                                                                  glo.Variables.current_assignments[ship.id].

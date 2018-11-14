@@ -8,6 +8,7 @@ Class will hold different (dumb) analytic routines.
 
 from hlt import Position, Direction
 
+from . import seek_n_nav
 from . import myglobals as glo
 
 
@@ -114,7 +115,7 @@ class HaliteAnalysis:
         :return: Direction
         """
         halite_best = 0
-        best_dir = None
+        best_dir = seek_n_nav.Nav.generate_random_offset()
 
         glo.Misc.log_w_shid('seek', 'info', ship.id, "Entered analytics.HaliteAnalysis.find_best_dir()")
 
@@ -133,3 +134,4 @@ class HaliteAnalysis:
                 best_dir = da_way
 
         return best_dir
+

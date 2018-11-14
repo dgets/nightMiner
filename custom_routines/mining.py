@@ -31,9 +31,11 @@ class Mine:
         glo.Misc.log_w_shid('seek', 'debug', ship.id, " ShipHistory-->" +
                             str(glo.Variables.current_assignments[ship.id]))
 
-        new_dir = analytics.HaliteAnalysis.find_best_dir(ship, game_map)
+        new_pos = ship.position.directional_offset(analytics.HaliteAnalysis.find_best_dir(ship, game_map))
+        glo.Misc.loggit('core', 'debug', " -* new_pos contents: " + str(new_pos))
+
         # random.choice([Direction.North, Direction.South, Direction.East, Direction.West])
-        glo.Variables.current_assignments[ship.id].destination = game_map[ship.position.directional_offset(new_dir)]
+        glo.Variables.current_assignments[ship.id].destination = new_pos
         glo.Variables.current_assignments[ship.id].secondary_mission = glo.Missions.in_transit
         glo.Variables.current_assignments[ship.id].turnstamp = turn
 

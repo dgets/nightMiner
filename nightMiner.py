@@ -97,7 +97,7 @@ while True:
                         glo.Missions.dropoff and not ship.is_full:
                     # mine
                     glo.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **mining** @ " +
-                                          str(ship.position))
+                                    str(ship.position))
                     glo.Variables.current_assignments[ship.id] = history.ShipHistory(ship.id, ship.position,
                                                                                            None, turn,
                                                                                            glo.Missions.mining,
