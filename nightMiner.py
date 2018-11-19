@@ -164,7 +164,7 @@ while True:
     else:
         glo.Misc.loggit('core', 'debug', "Entered the scuttle race clause")
         # scuttle everybody home and avoid the clusterfsck
-        command_queue.append(core_processing.Core.scuttle_for_finish(me, game_map, turn))
+        command_queue = core_processing.Core.scuttle_for_finish(me, game_map, turn)
 
     turn += 1
     game.end_turn(command_queue)
