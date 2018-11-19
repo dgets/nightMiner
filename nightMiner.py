@@ -22,7 +22,7 @@ game = core_processing.Core.original_preprocessing()
 # glo.Misc.loggit('core', 'debug', "max_turns set to: " + str(max_turns)
 # glo.Misc.loggit('core', 'debug', "Max_Scuttle_Time set to: " + str(glo.Const.Max_Scuttle_Time))
 
-Max_Scuttle_Time = constants.MAX_TURNS - (40 * 2)
+Max_Scuttle_Time = constants.MAX_TURNS - 10
 
 # for turnstamps
 turn: int = 0
@@ -46,10 +46,10 @@ while True:
     c_queue_addition = None
 
     glo.Misc.loggit('core', 'debug', " Making sure turn (" + str(turn) + " <= " +
-                          str(Max_Scuttle_Time - (len(me.get_ships()) * 2)) + ")")
+                          str(Max_Scuttle_Time - len(me.get_ships())) + ")")
 
     # if not turn > (500 - game_map.width - (len(me.get_ships()) * 2)):
-    if not turn > (Max_Scuttle_Time - (len(me.get_ships()) * 2)):    # until glo issues are fixed
+    if not turn > (Max_Scuttle_Time - len(me.get_ships())):    # until glo issues are fixed
         # we're not in the scuttle time crunch yet
         for ship in me.get_ships():
             kill_from_history_queue = []
@@ -154,8 +154,6 @@ while True:
         glo.Misc.loggit('core', 'debug', "Killing from history due to ship 8-x: " + str(new_kill_list_additions))
         if new_kill_list_additions is not None:
             kill_from_history_queue += new_kill_list_additions
-
-
 
     else:
         glo.Misc.loggit('core', 'debug', "Entered the scuttle race clause")

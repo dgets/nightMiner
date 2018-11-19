@@ -28,6 +28,11 @@ class Const:
         'scuttle': True,
     }
 
+    FEATURES = {
+        'mining': True,
+        'offense_blockade': True,
+    }
+
     Enough_Ore_To_Spawn = 2000
     Initial_Scoot_Distance = 5
     Max_Chunk_Width = Initial_Scoot_Distance

@@ -174,7 +174,9 @@ class Core:
                                                                  destination)))
 
             elif ship.position == me.shipyard.position and \
-                    glo.Variables.current_assignments[ship.id].primary_mission != glo.Missions.get_distance:
+                    ship.halite_amount == 0:
+                # glo.Variables.current_assignments[ship.id].primary_mission != glo.Missions.get_distance:
+
                 # get away from the drop
                 glo.Misc.loggit('scuttle', 'info', " - ship.id: " + str(ship.id) + " setting get_distance from " +
                                       "shipyard")
