@@ -31,7 +31,15 @@ class Mine:
         glo.Misc.log_w_shid('seek', 'debug', ship.id, " ShipHistory-->" +
                             str(glo.Variables.current_assignments[ship.id]))
 
-        new_pos = ship.position.directional_offset(analytics.HaliteAnalysis.find_best_dir(ship, game_map))
+        # new_pos = ship.position.directional_offset(analytics.HaliteAnalysis.find_best_dir(ship, game_map))
+        new_dir = analytics.NavAssist.avoid_collision_by_random_scoot(
+            seek_n_nav.Nav.generate_profitable_offset(ship, game_map), ship)
+
+        if new_dir is None:
+            glo.Misc.loggit('core', 'debug', " -* staying still for collision avoidance")
+            return ship.stay_still()
+
+        new_pos = ship.position.directional_offset(new_dir)
         glo.Misc.loggit('core', 'debug', " -* new_pos contents: " + str(new_pos))
 
         # random.choice([Direction.North, Direction.South, Direction.East, Direction.West])
@@ -42,7 +50,8 @@ class Mine:
         glo.Misc.log_w_shid('seek', 'debug', ship.id, " ShipHistory after processing-->" +
                             str(glo.Variables.current_assignments[ship.id]))
 
-        return seek_n_nav.Nav.less_dumb_move(ship, glo.Misc.r_dir_choice(), game_map)
+        # return seek_n_nav.Nav.less_dumb_move(ship, glo.Misc.r_dir_choice(), game_map)
+        return ship.move(new_dir)
 
     @staticmethod
     def done_with_transit_now_mine(ship, turn):
