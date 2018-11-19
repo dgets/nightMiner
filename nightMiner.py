@@ -40,6 +40,7 @@ while True:
     command_queue = []
     kill_from_history_queue = []
     new_kill_list_additions = []
+    glo.Variables.considered_destinations = []
 
     # clear up other potential crap
     c_queue_addition = None
@@ -116,13 +117,21 @@ while True:
                         and ship.position == me.shipyard.position:
                     # drop off the fucking halite HERE then, if nothing else
                     glo.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " DROP the BONE")
-                    kill_from_history_queue.append(ship.id)
+                    # kill_from_history_queue.append(ship.id)
+
+                    try:
+                        command_queue.append(
+                            ship.move(seek_n_nav.StartUp.get_initial_minimum_distance(ship, me, game_map, turn)))
+                    except:
+                        command_queue.append(ship.move(glo.Misc.r_dir_choice()))
+
+                    # this all should be handled from core_processing
 
                     continue
 
-            except KeyError as ke:
+            except KeyError:
                 # set everybody to mining, first of all
-                command_queue.append(seek_n_nav.StartUp.get_initial_minimum_distance(ship, me, game_map, turn, ke))
+                command_queue.append(seek_n_nav.StartUp.get_initial_minimum_distance(ship, me, game_map, turn))
 
             glo.Misc.loggit('core', 'debug', " - found and processed ship: " + str(ship.id))
 
@@ -146,10 +155,7 @@ while True:
         if new_kill_list_additions is not None:
             kill_from_history_queue += new_kill_list_additions
 
-        for shid in kill_from_history_queue:
-            # wipe away the dingleberries
-            glo.Misc.loggit('core', 'debug', "Killing history of shid: " + str(shid))
-            glo.Variables.current_assignments.pop(shid, None)
+
 
     else:
         glo.Misc.loggit('core', 'debug', "Entered the scuttle race clause")

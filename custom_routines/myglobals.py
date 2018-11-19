@@ -45,6 +45,7 @@ class Variables:
     """
 
     current_assignments = {}   # contains { id: ShipHistory }
+    considered_destinations = []
 
 
 class Missions(Enum):
