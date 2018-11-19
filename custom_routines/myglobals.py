@@ -28,12 +28,17 @@ class Const:
         'scuttle': True,
     }
 
+    FEATURES = {
+        'mining': True,
+        'offense_blockade': True,
+    }
+
     Enough_Ore_To_Spawn = 2000
     Initial_Scoot_Distance = 5
     Max_Chunk_Width = Initial_Scoot_Distance
     Max_Chunk_Height = Initial_Scoot_Distance
-    #Max_Scuttle_Time = constants.MAX_TURNS - (Game.game_map.width * 2)
-    #Max_Scuttle_Time = constants.MAX_TURNS - (40 * 2)  # until above works
+    # Max_Scuttle_Time = constants.MAX_TURNS - (Game.game_map.width * 2)
+    # Max_Scuttle_Time = constants.MAX_TURNS - (40 * 2)  # until above works
     # NOTE: the above will need to have the # of living ships * 2 added to it,
     # so that they can all get in to dropoff and get out of each others way,
     # so long as we're only dealing with the one shipyard & no dropoffs
@@ -44,7 +49,8 @@ class Variables:
     global variables
     """
 
-    current_assignments = { }   # contains { id: ShipHistory }
+    current_assignments = {}   # contains { id: ShipHistory }
+    considered_destinations = []
 
 
 class Missions(Enum):
@@ -92,9 +98,9 @@ class Misc:
     def log_w_shid(debugging_type, log_level, id, log_message):
         if debugging_type == 'any' or Const.DEBUGGING[debugging_type]:
             if log_level == 'debug' or log_level == 'any':
-                logging.debug(" - ship.id" + str(id) + ": " + log_message)
+                logging.debug(" - ship.id: " + str(id) + " " + log_message)
             elif log_level == 'info' or log_level == 'any':
-                logging.info(" - ship.id" + str(id) + ": " + log_message)
+                logging.info(" - ship.id: " + str(id) + " " + log_message)
             else:
                 raise RuntimeError("Log level specified is not implemented in myglobals.Misc.log_w_shid()")
 
@@ -108,3 +114,18 @@ class Misc:
         """
 
         return random.choice([Direction.North, Direction.South, Direction.East, Direction.West])
+
+    @staticmethod
+    def add_barred_destination(direction, ship):
+        """
+        Method adds another destination to the considered_destinations list.
+
+        TODO: rename considered_destinations to something more intuitive
+
+        :param direction:
+        :param ship:
+        :return:
+        """
+        Variables.considered_destinations.append(ship.position.directional_offset(direction))
+
+        return
