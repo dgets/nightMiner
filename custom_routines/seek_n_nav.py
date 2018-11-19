@@ -11,27 +11,64 @@ location determination and navigation to it
 
 import random
 
-from hlt import Position, Direction
+from hlt import Direction, game_map
 
-from . import history, seek_n_nav
+from . import history, analytics
 from . import myglobals as glo
 
+
 class Nav:
+    # @staticmethod
+    # def generate_random_offset(current_position):
+    #     """
+    #     Generates a random position w/in glo.Const.Initial_Scoot_Distance
+    #     of current_location, and returns it for navigation to a new location
+    #     w/in that distance
+    #
+    #     TODO: Get collision detection here
+    #
+    #     :param current_position: Position
+    #     :return: new Position destination
+    #     """
+    #
+    #     x_offset = random.randint(-glo.Const.Initial_Scoot_Distance, glo.Const.Initial_Scoot_Distance)
+    #     y_offset = random.randint(-glo.Const.Initial_Scoot_Distance, glo.Const.Initial_Scoot_Distance)
+    #
+    #     return Position(current_position.x + x_offset, current_position.y + y_offset)
     @staticmethod
-    def generate_random_offset(current_position):
+    def generate_random_offset():
         """
-        Generates a random position w/in glo.Const.Initial_Scoot_Distance
-        of current_location, and returns it for navigation to a new location
-        w/in that distance
+        Generates a random Direction
 
-        :param current_position: Position
-        :return: new Position destination
+        :rtype: object
+        :return: Direction
         """
 
-        x_offset = random.randint(-glo.Const.Initial_Scoot_Distance, glo.Const.Initial_Scoot_Distance)
-        y_offset = random.randint(-glo.Const.Initial_Scoot_Distance, glo.Const.Initial_Scoot_Distance)
+        # return Direction(random.randint(-1, 1), random.randint(-1, 1))
+        return random.choice([Direction.North, Direction.South, Direction.East, Direction.West])
 
-        return Position(current_position.x + x_offset, current_position.y + y_offset)
+    @staticmethod
+    def generate_profitable_offset(ship: object, game_map: object) -> object:
+        """
+        Finds the most profitable direction to move in, or random if none are
+        available.
+
+        :param ship:
+        :param game_map:
+        :return: Direction
+        """
+
+        new_dir = analytics.HaliteAnalysis.find_best_dir(ship, game_map)
+
+        if new_dir is not None:
+            glo.Misc.loggit('core', 'debug', " -* generate_profitable_offset() returning: " + str(new_dir) +
+                            " from: analytics.HaliteAnalysis.find_best_dir()")
+            return new_dir
+        else:
+            new_dir = Nav.generate_random_offset(ship.position)
+            glo.Misc.loggit('core', 'debug', " -* generate_profitable_offset() returning: " + str(new_dir) +
+                            " from:  Nav.generate_random_offset()")
+            return new_dir
 
     @staticmethod
     def return_halite_to_shipyard(ship, me, game_map, turn):
@@ -66,15 +103,15 @@ class Nav:
         :param game_map:
         :return:
         """
-        next_dest = game_map[ship.position.directional_offset(direction)]
-        if next_dest.is_empty:
-            glo.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " one step at a time...")
-            #return ship.move(direction)
+        next_dir = analytics.NavAssist.avoid_collision_by_random_scoot(direction, ship)
+        if next_dir is not None:
+            next_dest = game_map[ship.position.directional_offset(direction)]
+
             return ship.move(game_map.naive_navigate(ship, next_dest.position))
         else:
             # I guess we'll just wait for now
             glo.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " avoiding collision at " +
-                                  str(ship.position))
+                            str(ship.position))
             return ship.stay_still()
 
     @staticmethod
@@ -87,15 +124,18 @@ class Nav:
         :return:
         """
         glo.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **scooting** to " +
-                              str(glo.Variables.current_assignments[ship.id].destination))
+                        str(glo.Variables.current_assignments[ship.id].destination))
 
         return ship.move(game_map.naive_navigate(ship,
                                                  glo.Variables.current_assignments[ship.id].destination))
+        # return Nav.less_dumb_move(ship, game_map.naive_navigate(ship,
+        #                                                         glo.Variables.current_assignments[ship.id].
+        #                                                         destination), game_map)
 
 
 class StartUp:
     @staticmethod
-    def get_initial_minimum_distance(ship, me, turn, key_exception):
+    def get_initial_minimum_distance(ship, me, game_map, turn):
         """
         Returns the command_queue data for the ship obtaining initial minimum
         distance in order to avoid clogging the shipyard access.
@@ -103,21 +143,56 @@ class StartUp:
         :param ship:
         :param me:
         :param turn:
-        :param key_exception:
         :return:
         """
 
         glo.Misc.loggit('core', 'debug', " - fell into except; **setting new ship id: " + str(ship.id) +
-                                  " to mining**")
-        glo.Misc.loggit('core', 'debug', " -* ke: " + str(key_exception))
+                        " to mining**")
+        # glo.Misc.loggit('core', 'debug', " -* ke: " + str(key_exception))
 
-        tmp_destination = seek_n_nav.Nav.generate_random_offset(ship.position)
-        while tmp_destination == me.shipyard.position:
-            tmp_destination = seek_n_nav.Nav.generate_random_offset(ship.position)
+        tmp_destination_dir = Nav.generate_profitable_offset(ship, game_map)
+        glo.Misc.loggit('core', 'debug', " -** tmp_destination_dir contents: " + str(tmp_destination_dir))
+
+        while ship.position.directional_offset(tmp_destination_dir) == me.shipyard.position or \
+                game_map[ship.position.directional_offset(tmp_destination_dir)].is_occupied:
+            tmp_destination_dir = glo.Misc.r_dir_choice()
+
+        # determine a new destination; for now it's just going to be Initial_Scoot_Distance moves in the most
+        # profitable direction (this will need to be changed, obviously)
+        cntr = 0
+        inc_pos = ship.position
+        while cntr < glo.Const.Initial_Scoot_Distance:
+            cntr += 1
+            inc_pos = inc_pos.directional_offset(tmp_destination_dir)
 
         glo.Variables.current_assignments[ship.id] = history.ShipHistory(ship.id, ship.position,
-                                                                               tmp_destination, turn,
-                                                                               glo.Missions.mining,
-                                                                               glo.Missions.in_transit)
+                                                                         # ship.position.directional_offset(
+                                                                         #    tmp_destination_dir),
+                                                                         inc_pos, turn, glo.Missions.mining,
+                                                                         glo.Missions.in_transit)
 
-        return ship.move(random.choice([Direction.North, Direction.South, Direction.East, Direction.West]))
+        # return ship.move(random.choice([Direction.North, Direction.South, Direction.East, Direction.West]))
+        # while ship.position.directional_offset(tmp_destination_dir) in glo.Variables.considered_destinations:
+        #     tmp_destination_dir = glo.Misc.r_dir_choice()
+        tmp_destination_dir = analytics.NavAssist.avoid_collision_by_random_scoot(tmp_destination_dir, ship)
+        if tmp_destination_dir is None:
+            return ship.stay_still()
+        else:
+            return Nav.less_dumb_move(ship, tmp_destination_dir, game_map)
+
+
+class Misc:
+    @staticmethod
+    def is_position_normalized(pos, game_map):
+        """
+        Returns t/f whether or not the position is normalized
+
+        :param pos:
+        :param game_map:
+        :return: boolean
+        """
+
+        if pos.x >= game_map.width or pos.y >= game_map.height:
+            return False
+        else:
+            return True

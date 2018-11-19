@@ -22,10 +22,10 @@ game = core_processing.Core.original_preprocessing()
 # glo.Misc.loggit('core', 'debug', "max_turns set to: " + str(max_turns)
 # glo.Misc.loggit('core', 'debug', "Max_Scuttle_Time set to: " + str(glo.Const.Max_Scuttle_Time))
 
-Max_Scuttle_Time = constants.MAX_TURNS - (40 * 2)
+Max_Scuttle_Time = constants.MAX_TURNS - 10
 
 # for turnstamps
-turn = 0
+turn: int = 0
 
 # --==++** PRIMARY GAME LOOP **++==--
 while True:
@@ -40,20 +40,23 @@ while True:
     command_queue = []
     kill_from_history_queue = []
     new_kill_list_additions = []
+    glo.Variables.considered_destinations = []
 
     # clear up other potential crap
     c_queue_addition = None
 
     glo.Misc.loggit('core', 'debug', " Making sure turn (" + str(turn) + " <= " +
-                          str(Max_Scuttle_Time - (len(me.get_ships()) * 2)) + ")")
+                          str(Max_Scuttle_Time - len(me.get_ships())) + ")")
 
     # if not turn > (500 - game_map.width - (len(me.get_ships()) * 2)):
-    if not turn > (Max_Scuttle_Time - (len(me.get_ships()) * 2)):    # until glo issues are fixed
+    if not turn > (Max_Scuttle_Time - len(me.get_ships())):    # until glo issues are fixed
         # we're not in the scuttle time crunch yet
         for ship in me.get_ships():
             kill_from_history_queue = []
 
             glo.Misc.loggit('core', 'info', " - processing ship.id: " + str(ship.id))
+            glo.Misc.log_w_shid('seek', 'debug', ship.id, "Present cell's halite: " +
+                                str(game_map[ship.position].halite_amount))
             try:
                 # if this is a new ship, we'll be in the except, below
                 if glo.Variables.current_assignments[ship.id].primary_mission == glo.Missions.mining:
@@ -95,7 +98,7 @@ while True:
                         glo.Missions.dropoff and not ship.is_full:
                     # mine
                     glo.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **mining** @ " +
-                                          str(ship.position))
+                                    str(ship.position))
                     glo.Variables.current_assignments[ship.id] = history.ShipHistory(ship.id, ship.position,
                                                                                            None, turn,
                                                                                            glo.Missions.mining,
@@ -114,13 +117,21 @@ while True:
                         and ship.position == me.shipyard.position:
                     # drop off the fucking halite HERE then, if nothing else
                     glo.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " DROP the BONE")
-                    kill_from_history_queue.append(ship.id)
+                    # kill_from_history_queue.append(ship.id)
+
+                    try:
+                        command_queue.append(
+                            ship.move(seek_n_nav.StartUp.get_initial_minimum_distance(ship, me, game_map, turn)))
+                    except:
+                        command_queue.append(ship.move(glo.Misc.r_dir_choice()))
+
+                    # this all should be handled from core_processing
 
                     continue
 
-            except KeyError as ke:
+            except KeyError:
                 # set everybody to mining, first of all
-                command_queue.append(seek_n_nav.StartUp.get_initial_minimum_distance(ship, me, turn, ke))
+                command_queue.append(seek_n_nav.StartUp.get_initial_minimum_distance(ship, me, game_map, turn))
 
             glo.Misc.loggit('core', 'debug', " - found and processed ship: " + str(ship.id))
 
@@ -129,7 +140,7 @@ while True:
         #                      str(glo.Const.Enough_Ore_To_Spawn))
 
         #if turn <= (constants.MAX_TURNS % 2) and me.halite_amount >= glo.Const.Enough_Ore_To_Spawn \
-        if turn <= 400 and me.halite_amount >= glo.Const.Enough_Ore_To_Spawn  \
+        if turn <= 250 and me.halite_amount >= glo.Const.Enough_Ore_To_Spawn  \
                 and not game_map[me.shipyard].is_occupied:
             glo.Misc.loggit('core', 'debug', " - spawning ship")
             command_queue.append(me.shipyard.spawn())
@@ -144,11 +155,12 @@ while True:
         if new_kill_list_additions is not None:
             kill_from_history_queue += new_kill_list_additions
 
-        for shid in kill_from_history_queue:
-            # wipe away the dingleberries
-            glo.Misc.loggit('core', 'debug', "Killing history of shid: " + str(shid))
-            glo.Variables.current_assignments.pop(shid, None)
-
+    # elif ship.halite_amount < constants.MAX_HALITE - 100:
+    #     glo.Misc.loggit('core', 'debug', "Made scuttle drop; keeping busy until the end now")
+    #     # no collision detection, let's just see how this works for now
+    #     command_queue.append(ship.move(seek_n_nav.Nav.generate_profitable_offset(ship, game_map)))
+    #     # if this is too chaotic we can just head for (0, 0) or something for
+    #     # now...
     else:
         glo.Misc.loggit('core', 'debug', "Entered the scuttle race clause")
         # scuttle everybody home and avoid the clusterfsck
