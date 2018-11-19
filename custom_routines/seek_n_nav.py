@@ -103,16 +103,15 @@ class Nav:
         :param game_map:
         :return:
         """
-        next_dest = game_map[ship.position.directional_offset(direction)]
+        next_dir = analytics.NavAssist.avoid_collision_by_random_scoot(direction, ship)
+        if next_dir is not None:
+            next_dest = game_map[ship.position.directional_offset(direction)]
 
-        if next_dest.is_empty:
-            glo.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " one step at a time...")
-            #return ship.move(direction)
             return ship.move(game_map.naive_navigate(ship, next_dest.position))
         else:
             # I guess we'll just wait for now
             glo.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " avoiding collision at " +
-                                  str(ship.position))
+                            str(ship.position))
             return ship.stay_still()
 
     @staticmethod

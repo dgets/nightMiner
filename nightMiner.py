@@ -140,7 +140,7 @@ while True:
         #                      str(glo.Const.Enough_Ore_To_Spawn))
 
         #if turn <= (constants.MAX_TURNS % 2) and me.halite_amount >= glo.Const.Enough_Ore_To_Spawn \
-        if turn <= 400 and me.halite_amount >= glo.Const.Enough_Ore_To_Spawn  \
+        if turn <= 250 and me.halite_amount >= glo.Const.Enough_Ore_To_Spawn  \
                 and not game_map[me.shipyard].is_occupied:
             glo.Misc.loggit('core', 'debug', " - spawning ship")
             command_queue.append(me.shipyard.spawn())
@@ -155,10 +155,16 @@ while True:
         if new_kill_list_additions is not None:
             kill_from_history_queue += new_kill_list_additions
 
+    # elif ship.halite_amount < constants.MAX_HALITE - 100:
+    #     glo.Misc.loggit('core', 'debug', "Made scuttle drop; keeping busy until the end now")
+    #     # no collision detection, let's just see how this works for now
+    #     command_queue.append(ship.move(seek_n_nav.Nav.generate_profitable_offset(ship, game_map)))
+    #     # if this is too chaotic we can just head for (0, 0) or something for
+    #     # now...
     else:
         glo.Misc.loggit('core', 'debug', "Entered the scuttle race clause")
         # scuttle everybody home and avoid the clusterfsck
-        command_queue = core_processing.Core.scuttle_for_finish(me, game_map, turn)
+        command_queue.append(core_processing.Core.scuttle_for_finish(me, game_map, turn))
 
     turn += 1
     game.end_turn(command_queue)

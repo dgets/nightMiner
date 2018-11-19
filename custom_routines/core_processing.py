@@ -11,6 +11,7 @@ perhaps, seek_n_nav.py.
 """
 
 import hlt
+from hlt import constants
 
 from . import seek_n_nav, mining, history
 from . import myglobals as glo
@@ -174,7 +175,7 @@ class Core:
                                                                  destination)))
 
             elif ship.position == me.shipyard.position and \
-                    ship.halite_amount == 0:
+                    ship.halite_amount <= constants.MAX_HALITE - 100:
                 # glo.Variables.current_assignments[ship.id].primary_mission != glo.Missions.get_distance:
 
                 # get away from the drop
