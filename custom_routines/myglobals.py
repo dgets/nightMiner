@@ -109,3 +109,18 @@ class Misc:
         """
 
         return random.choice([Direction.North, Direction.South, Direction.East, Direction.West])
+
+    @staticmethod
+    def add_barred_destination(direction, ship):
+        """
+        Method adds another destination to the considered_destinations list.
+
+        TODO: rename considered_destinations to something more intuitive
+
+        :param direction:
+        :param ship:
+        :return:
+        """
+        Variables.considered_destinations.append(ship.position.directional_offset(direction))
+
+        return

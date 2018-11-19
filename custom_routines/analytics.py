@@ -102,6 +102,7 @@ class HaliteAnalysis:
     Different static methods for analyzing the halite content of the map in
     general and in other non-MapChunk situations.
     """
+
     @staticmethod
     def find_best_dir(ship, game_map):
         """
@@ -135,3 +136,59 @@ class HaliteAnalysis:
 
         return best_dir
 
+
+class NavAssist:
+    """
+    Originally created as a place to house a routine created to 'globally'
+    avoid collisions between our own ships, this will house any sort of
+    analytic routines meant to assist in navigation.
+    """
+
+    @staticmethod
+    def avoid_collision_by_wait(dest_dir, ship):
+        """
+        Method will determine whether or not the directional move being
+        considered has already been taken by a ship during this turn; if so,
+        it will go with staying still instead of making a move this turn (ie
+        allow the other ship to pass by and then go on its way.
+
+        TODO: Add verification of whether or not the other ship is marked 'in_transit'
+
+        :param dest_dir:
+        :param ship:
+        :return: Direction or None
+        """
+        if ship.position.directional_offset(dest_dir) in glo.Variables.considered_destinations:
+            return None
+        else:
+            glo.Misc.add_barred_destination(dest_dir, ship)
+            return dest_dir
+
+    @staticmethod
+    def avoid_collision_by_random_scoot(dest_dir, ship):
+        """
+        Method will, again, determine whether or not the directional move being
+        considered has already been taken; if so, it will attempt the other
+        cardinal directions.  The first without any occupants will be selected;
+        if all have occupants, None will be returned.
+
+        :param dest_dir:
+        :param ship:
+        :return: Direction or None
+        """
+        if ship.position.directional_offset(dest_dir) in glo.Variables.considered_destinations:
+            # position is already taken
+
+            for tmp_dir in [Direction.North, Direction.South, Direction.East, Direction.West]:
+                if ship.position.directional_offset(tmp_dir) not in glo.Variables.considered_destinations:
+                    # we can return our pseudo-random direction
+
+                    glo.Misc.add_barred_destination(tmp_dir, ship)
+                    return tmp_dir
+
+            # we're just going to have to stay still if we're here
+            return None
+
+        else:
+            # position was not taken
+            return dest_dir
