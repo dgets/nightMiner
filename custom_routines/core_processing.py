@@ -39,6 +39,19 @@ class Core:
 
         glo.Misc.loggit('any', 'info', "Hatched and swimming! Player ID is {}.".format(game.my_id))
 
+        # identify map data for Const storage and later retrieval
+        glo.Misc.loggit('preprocessing', 'info', "Scanning for enemy shipyards")
+        for x in range(0, glo.Const.Max_Chunk_Width):
+            for y in range(0, glo.Const.Max_Chunk_Height):
+                # check each map cell
+                # NOTE: this only verifies that it's not our shipyard, as no drops would exist yet
+                if game.game_map[Position(x, y)].structure_type is not None and \
+                        game.me.shipyard.position != Position(x, y):
+                    # there is a structure that is not ours
+                    glo.Misc.loggit('preprocessing', 'debug', "Enemy shipyard at: " + str(Position(x, y)))
+
+                    glo.Const.Enemy_Drops.append(Position(x, y))
+
         return game
 
     @staticmethod
@@ -187,9 +200,14 @@ class Core:
                 # glo.Variables.current_assignments[ship.id].primary_mission != glo.Missions.get_distance:
 
                 # get away from the drop
-                glo.Misc.loggit('scuttle', 'info', " - ship.id: " + str(ship.id) + " setting get_distance from " +
-                                      "shipyard")
-                glo.Variables.current_assignments[ship.id].primary_mission = glo.Missions.get_distance
+                # glo.Misc.loggit('scuttle', 'info', " - ship.id: " + str(ship.id) + " setting get_distance from " +
+                #                       "shipyard")
+                # glo.Variables.current_assignments[ship.id].primary_mission = glo.Missions.get_distance
+
+                # go blockade
+                c_queue.append(seek_n_nav.Offense.blockade_enemy_drops(ship, game_map))
+
+                glo.Variables.current_assignments[ship.id].primary_mission = glo.Missions.blockade
                 glo.Variables.current_assignments[ship.id].secondary_mission = glo.Missions.in_transit
                 glo.Variables.current_assignments[ship.id].turnstamp = turn
 
@@ -204,15 +222,13 @@ class Core:
                 #                                                  destination)))
 
                 # c_queue.append(ship.move(game_map.naive_navigate(ship, Position(0, 0))))
-                if (turn % 2) == 1:
-                    c_queue.append(ship.move(Direction.North))
-                else:
-                    c_queue.append(ship.move(Direction.East))
 
-                # trying out a less potentially profitable, but more sure-fire shipyard lane clearing method
-                # new_dir = random.choice([Direction.North, Direction.West, Direction.South])
-                #
-                # c_queue.append(seek_n_nav.Nav.less_dumb_move(ship, new_dir, game_map))
+                # if (turn % 2) == 1:
+                #     c_queue.append(ship.move(Direction.North))
+                # else:
+                #     c_queue.append(ship.move(Direction.East))
+
+
             elif glo.Variables.current_assignments[ship.id].primary_mission != glo.Missions.scuttle:
                 glo.Misc.loggit('scuttle', 'info', " - ship.id: " + str(ship.id) + " heading back to drop")
                 # head back to the drop, it's scuttle time

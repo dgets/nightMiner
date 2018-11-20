@@ -11,7 +11,7 @@ location determination and navigation to it
 
 import random
 
-from hlt import Direction
+from hlt import Direction, Position
 
 from . import history, analytics
 from . import myglobals as glo
@@ -123,6 +123,7 @@ class Nav:
         :param game_map:
         :return:
         """
+
         glo.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **scooting** to " +
                         str(glo.Variables.current_assignments[ship.id].destination))
 
@@ -131,6 +132,43 @@ class Nav:
         # return Nav.less_dumb_move(ship, game_map.naive_navigate(ship,
         #                                                         glo.Variables.current_assignments[ship.id].
         #                                                         destination), game_map)
+
+
+class Offense:
+    @staticmethod
+    def blockade_enemy_drops(ship, game_map):
+        """
+        Method will identify the enemy shipyard locations, determine which are
+        best for a timely blockade, and send ships that have completed their
+        dropoffs to the primary lanes entering such.
+
+        TODO: don't use collision detection (ie naive_navigate)
+        TODO: if more than one ship is headed there, block each of the 4 lanes
+
+        :param ship:
+        :param game_map:
+        :return: command_queue addition
+        """
+
+        glo.Misc.log_w_shid('blockade', 'info', ship.id, " - entered blockade_enemy_drops()")
+
+        target_syard_pos = None
+        dist = game_map.width * 2 + 1  # ObDistanceBiggerThanGamesMaxDist
+
+        # determine the closest shipyard
+        for enemy_syard_pos in glo.Const.Enemy_Drops:
+            if game_map.calculate_distance(ship.position, enemy_syard_pos) < dist:
+                glo.Misc.log_w_shid('blockade', 'info', ship.id, " -* found close(er) shipyard at: " +
+                                    str(enemy_syard_pos))
+                dist = game_map.calculate_distance(ship.position, enemy_syard_pos)
+                target_syard_pos = enemy_syard_pos
+
+        if target_syard_pos is not None:
+            return ship.move(game_map.naive_navigate(ship, target_syard_pos))
+        else:
+            glo.Misc.log_w_shid('blockade', 'info', ship.id, " -* did not find enemy shipyard(s)")
+            
+            return ship.move(game_map.naive_navigate(ship, Position(1, 1)))
 
 
 class StartUp:

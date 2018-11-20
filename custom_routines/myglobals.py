@@ -19,13 +19,15 @@ class Const:
     global constants
     """
     DEBUGGING = {
+        'preprocessing': True,
         'core': True,
-        'seek': True,
-        'locate_ore': True,
+        'seek': False,
+        'locate_ore': False,
         'perimeter_search': False,  # this will almost certainly be phased out
-        'save_state': True,
+        'save_state': False,
         'pruning': False,
         'scuttle': True,
+        'blockade': True,
     }
 
     FEATURES = {
@@ -42,6 +44,7 @@ class Const:
     # NOTE: the above will need to have the # of living ships * 2 added to it,
     # so that they can all get in to dropoff and get out of each others way,
     # so long as we're only dealing with the one shipyard & no dropoffs
+    Enemy_Drops = []
 
 
 class Variables:
@@ -65,6 +68,7 @@ class Missions(Enum):
     offense = 6
     busy = 7
     scuttle = 8
+    blockade = 9
 
 
 class Misc:
