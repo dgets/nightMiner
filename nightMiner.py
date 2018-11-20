@@ -12,6 +12,7 @@ time around.  ;)
 """
 
 from hlt import constants
+
 from custom_routines import history, seek_n_nav, core_processing
 from custom_routines import myglobals as glo
 
@@ -22,9 +23,8 @@ game = core_processing.Core.original_preprocessing()
 # glo.Misc.loggit('core', 'debug', "max_turns set to: " + str(max_turns)
 # glo.Misc.loggit('core', 'debug', "Max_Scuttle_Time set to: " + str(glo.Const.Max_Scuttle_Time))
 
-Max_Scuttle_Time = constants.MAX_TURNS - 10
+Max_Scuttle_Time = constants.MAX_TURNS - 25
 
-# for turnstamps
 turn: int = 0
 
 # --==++** PRIMARY GAME LOOP **++==--

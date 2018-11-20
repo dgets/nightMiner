@@ -11,7 +11,7 @@ location determination and navigation to it
 
 import random
 
-from hlt import Direction, game_map
+from hlt import Direction
 
 from . import history, analytics
 from . import myglobals as glo
