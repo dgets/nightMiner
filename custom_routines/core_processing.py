@@ -10,8 +10,10 @@ is specifically for mining or halite dropoff in a mining specific file or,
 perhaps, seek_n_nav.py.
 """
 
+import random
+
 import hlt
-from hlt import constants
+from hlt import constants, Direction, Position
 
 from . import seek_n_nav, mining, history
 from . import myglobals as glo
@@ -92,7 +94,7 @@ class Core:
         #                     str(ship.position))
 
         # we've mined all of the halite, bounce a random square
-        if ship.halite_amount < 900 and \
+        if ship.halite_amount < constants.MAX_HALITE and \
                 glo.Variables.current_assignments[ship.id].primary_mission == glo.Missions.mining and \
                 glo.Variables.current_assignments[ship.id].secondary_mission == glo.Missions.busy and \
                 game_map[ship.position].halite_amount == 0:
@@ -100,8 +102,10 @@ class Core:
             return mining.Mine.low_cargo_and_no_immediate_halite(ship, game_map, turn)
 
         # we've fully transited and are in the spot where we wanted to mine
-        elif glo.Variables.current_assignments[ship.id].secondary_mission == glo.Missions.in_transit and \
-                glo.Variables.current_assignments[ship.id].destination == ship.position:
+        elif (glo.Variables.current_assignments[ship.id].secondary_mission == glo.Missions.in_transit or
+                glo.Variables.current_assignments[ship.id].secondary_mission == glo.Missions.busy) and \
+                glo.Variables.current_assignments[ship.id].destination == ship.position and \
+                game_map[ship.position].halite_amount > 0 and ship.halite_amount < constants.MAX_HALITE:
 
             return mining.Mine.done_with_transit_now_mine(ship, turn)
         # elif glo.Variables.current_assignments[ship.id].secondary_mission == glo.Missions.in_transit or \
@@ -149,7 +153,10 @@ class Core:
             glo.Variables.current_assignments[ship.id].turnstamp = turn
 
             # return ship.stay_still()
-            return ship.move(profit_dir)
+            if ship.halite_amount < constants.MAX_HALITE and game_map[ship.position].halite_amount > 0:
+                return ship.stay_still()
+            else:
+                return ship.move(profit_dir)
 
     @staticmethod
     def scuttle_for_finish(me, game_map, turn):
@@ -174,8 +181,9 @@ class Core:
                                                                  glo.Variables.current_assignments[ship.id].
                                                                  destination)))
 
-            elif ship.position == me.shipyard.position and \
-                    ship.halite_amount <= constants.MAX_HALITE - 100:
+            # elif ship.position == me.shipyard.position and \
+            #         ship.halite_amount <= constants.MAX_HALITE - 100:
+            elif ship.halite_amount <= 350:
                 # glo.Variables.current_assignments[ship.id].primary_mission != glo.Missions.get_distance:
 
                 # get away from the drop
@@ -185,15 +193,26 @@ class Core:
                 glo.Variables.current_assignments[ship.id].secondary_mission = glo.Missions.in_transit
                 glo.Variables.current_assignments[ship.id].turnstamp = turn
 
-                tmp_destination = seek_n_nav.Nav.generate_profitable_offset(ship, game_map)
-                while ship.position.directional_offset(tmp_destination) == me.shipyard.position:
-                    tmp_destination = seek_n_nav.Nav.profitable_profitable_offset(ship.position, game_map)
-                glo.Variables.current_assignments[ship.id].destination = \
-                    ship.position.directional_offset(tmp_destination)
+                # tmp_destination = seek_n_nav.Nav.generate_profitable_offset(ship, game_map)
+                # while ship.position.directional_offset(tmp_destination) == me.shipyard.position:
+                #     tmp_destination = seek_n_nav.Nav.profitable_profitable_offset(ship.position, game_map)
+                # glo.Variables.current_assignments[ship.id].destination = \
+                #     ship.position.directional_offset(tmp_destination)
 
-                c_queue.append(ship.move(game_map.naive_navigate(ship,
-                                                                 glo.Variables.current_assignments[ship.id].
-                                                                 destination)))
+                # c_queue.append(ship.move(game_map.naive_navigate(ship,
+                #                                                  glo.Variables.current_assignments[ship.id].
+                #                                                  destination)))
+
+                # c_queue.append(ship.move(game_map.naive_navigate(ship, Position(0, 0))))
+                if (turn % 2) == 1:
+                    c_queue.append(ship.move(Direction.North))
+                else:
+                    c_queue.append(ship.move(Direction.East))
+
+                # trying out a less potentially profitable, but more sure-fire shipyard lane clearing method
+                # new_dir = random.choice([Direction.North, Direction.West, Direction.South])
+                #
+                # c_queue.append(seek_n_nav.Nav.less_dumb_move(ship, new_dir, game_map))
             elif glo.Variables.current_assignments[ship.id].primary_mission != glo.Missions.scuttle:
                 glo.Misc.loggit('scuttle', 'info', " - ship.id: " + str(ship.id) + " heading back to drop")
                 # head back to the drop, it's scuttle time
