@@ -221,11 +221,12 @@ class Offense:
         #             glo.Const.Enemy_Drops.append(Position(x, y))
 
         # this is a whole lot easier
-        for player in game.players:
+        for player in game.players.values():
             if player is not game.me:
                 glo.Misc.loggit('preprocessing', 'debug', " - found shipyard @ " +
-                                str(player) + " belonging to player: " +
-                                str(player))
-                # glo.Const.Enemy_Drops.append(player.shipyard.position)
+                                str(player.shipyard) + " belonging to player: " +
+                                str(player.id))
+                glo.Const.Enemy_Drops.append(player.shipyard.position)
 
         return
+
