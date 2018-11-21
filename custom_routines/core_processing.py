@@ -15,7 +15,7 @@ import random
 import hlt
 from hlt import constants, Direction, Position
 
-from . import seek_n_nav, mining, history
+from . import seek_n_nav, mining, history, analytics
 from . import myglobals as glo
 
 
@@ -38,6 +38,8 @@ class Core:
         game.ready("nightMiner")
 
         glo.Misc.loggit('any', 'info', "Hatched and swimming! Player ID is {}.".format(game.my_id))
+
+        analytics.Offense.scan_for_enemy_shipyards(game)
 
         return game
 
@@ -139,7 +141,11 @@ class Core:
 
         # get off the pot when you're done shitting, por dios
         elif ship.position == me.shipyard.position and ship.halite_amount == 0:
-            return ship.move(seek_n_nav.StartUp.get_initial_minimum_distance(ship, me, game_map, turn))
+            c_queue_addition = ship.move(seek_n_nav.StartUp.get_initial_minimum_distance(ship, me, game_map, turn))
+            glo.Misc.log_w_shid('core', 'debug', ship.id, " - get_initial_minimum_distance() returning: " +
+                                str(c_queue_addition))
+
+            return c_queue_addition
 
         # not sure what happened just yet
         else:
@@ -176,7 +182,9 @@ class Core:
 
         for ship in me.get_ships():
             if glo.Variables.current_assignments[ship.id].primary_mission == glo.Missions.get_distance:
-                glo.Misc.loggit('scuttle', 'info', " - ship.id: " + str(ship.id) + " getting away from shipyard")
+                glo.Misc.loggit('scuttle', 'info', " - ship.id: " + str(ship.id) + " getting away from shipyard to " +
+                                glo.Variables.current_assignments[ship.id].destination)
+
                 c_queue.append(ship.move(game_map.naive_navigate(ship,
                                                                  glo.Variables.current_assignments[ship.id].
                                                                  destination)))
@@ -187,9 +195,14 @@ class Core:
                 # glo.Variables.current_assignments[ship.id].primary_mission != glo.Missions.get_distance:
 
                 # get away from the drop
-                glo.Misc.loggit('scuttle', 'info', " - ship.id: " + str(ship.id) + " setting get_distance from " +
-                                      "shipyard")
-                glo.Variables.current_assignments[ship.id].primary_mission = glo.Missions.get_distance
+                # glo.Misc.loggit('scuttle', 'info', " - ship.id: " + str(ship.id) + " setting get_distance from " +
+                #                       "shipyard")
+                # glo.Variables.current_assignments[ship.id].primary_mission = glo.Missions.get_distance
+
+                # go blockade
+                c_queue.append(seek_n_nav.Offense.blockade_enemy_drops(ship, game_map))
+
+                glo.Variables.current_assignments[ship.id].primary_mission = glo.Missions.blockade
                 glo.Variables.current_assignments[ship.id].secondary_mission = glo.Missions.in_transit
                 glo.Variables.current_assignments[ship.id].turnstamp = turn
 
@@ -204,15 +217,12 @@ class Core:
                 #                                                  destination)))
 
                 # c_queue.append(ship.move(game_map.naive_navigate(ship, Position(0, 0))))
-                if (turn % 2) == 1:
-                    c_queue.append(ship.move(Direction.North))
-                else:
-                    c_queue.append(ship.move(Direction.East))
 
-                # trying out a less potentially profitable, but more sure-fire shipyard lane clearing method
-                # new_dir = random.choice([Direction.North, Direction.West, Direction.South])
-                #
-                # c_queue.append(seek_n_nav.Nav.less_dumb_move(ship, new_dir, game_map))
+                # if (turn % 2) == 1:
+                #     c_queue.append(ship.move(Direction.North))
+                # else:
+                #     c_queue.append(ship.move(Direction.East))
+
             elif glo.Variables.current_assignments[ship.id].primary_mission != glo.Missions.scuttle:
                 glo.Misc.loggit('scuttle', 'info', " - ship.id: " + str(ship.id) + " heading back to drop")
                 # head back to the drop, it's scuttle time
