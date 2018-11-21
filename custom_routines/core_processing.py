@@ -73,46 +73,20 @@ class Core:
         :return: command_queue addition
         """
 
-        # normalize destination if not already handled
-
-        # if glo.Variables.current_assignments[ship.id].destination is not None \
-        #         and not seek_n_nav.Misc.is_position_normalized(glo.Variables.current_assignments[ship.id].destination,
-        #                                                        game_map):
-        #     glo.Misc.loggit('core', 'debug', " -* destination holds: " +
-        #                     str(glo.Variables.current_assignments[ship.id].destination))
-        #
-        #     glo.Variables.current_assignments[ship.id].destination = game_map.normalize(
-        #         glo.Variables.current_assignments[ship.id].destination
-        #     )
-
-        # NOTE: if the destination WAS normalized (as should usually be the case), this following clause will
-        # result in wandering; could this be the bug that we were looking for?
-        # else:
-        #     glo.Variables.current_assignments[ship.id].destination = \
-        #         ship.position.directional_offset(seek_n_nav.Nav.generate_profitable_offset(ship, game_map))
-
-        # glo.Misc.log_w_shid('core', 'debug', ship.id, "ShipHistory-> " + \
-        #                     str(glo.Variables.current_assignments[ship.id]) + " ship's position: " + \
-        #                     str(ship.position))
-
         # we've mined all of the halite, bounce a random square
         if ship.halite_amount < constants.MAX_HALITE and \
                 glo.Variables.current_assignments[ship.id].primary_mission == glo.Missions.mining and \
                 glo.Variables.current_assignments[ship.id].secondary_mission == glo.Missions.busy and \
                 game_map[ship.position].halite_amount == 0:
-
             return mining.Mine.low_cargo_and_no_immediate_halite(ship, game_map, turn)
 
         # we've fully transited and are in the spot where we wanted to mine
         elif (glo.Variables.current_assignments[ship.id].secondary_mission == glo.Missions.in_transit or
                 glo.Variables.current_assignments[ship.id].secondary_mission == glo.Missions.busy) and \
                 glo.Variables.current_assignments[ship.id].destination == ship.position and \
-                game_map[ship.position].halite_amount > 0 and ship.halite_amount < constants.MAX_HALITE:
-
+                game_map[ship.position].halite_amount > 0 and not ship.is_full:
+                # game_map[ship.position].halite_amount > 0 and ship.halite_amount < constants.MAX_HALITE:
             return mining.Mine.done_with_transit_now_mine(ship, turn)
-        # elif glo.Variables.current_assignments[ship.id].secondary_mission == glo.Missions.in_transit or \
-        #         glo.Variables.current_assignments[ship.id].secondary_mission == glo.Missions.busy:
-        #     return mining.Mine.done_with_transit_now_mine(ship, turn)
 
         # transit back to the shipyard
         elif ship.halite_amount >= 900 and ship.position != me.shipyard.position:
@@ -121,17 +95,17 @@ class Core:
             glo.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " in **transit to drop**")
             glo.Variables.current_assignments[ship.id].set_ldps(ship.position, me.shipyard.position,
                                                                 glo.Missions.dropoff, glo.Missions.in_transit)
-
             return seek_n_nav.Nav.return_halite_to_shipyard(ship, me, game_map, turn)
 
-        elif (ship.is_full or ship.halite_amount >= 900) and game_map[ship.position].halite_amount == 0:
-            # not sure why we're still in this loop, but drop off the goddamned halite
-            glo.Misc.loggit('core', 'debug', " -* ship.id: " + str(ship.id) + " **making drop** " +
-                            "from within the **mining** loop for some reason")
-            # now, obviously, we need to obtain minimum distance again and go back about our rounds
-
-            return ship.move(seek_n_nav.StartUp.get_initial_minimum_distance(ship, me, game_map, turn))
-            # return ship.stay_still()
+        # transit back to the shipyard #2 (log & determine which one of these 2 to ditch, presuming both
+        # aren't somehow being utilized)
+        # elif ship.halite_amount >= 900 and game_map[ship.position].halite_amount == 0:
+        #     # not sure why we're still in this loop, but drop off the goddamned halite
+        #     glo.Misc.loggit('core', 'debug', " -* ship.id: " + str(ship.id) + " **making drop** " +
+        #                     "from within the **mining** loop for some reason")
+        #     # now, obviously, we need to obtain minimum distance again and go back about our rounds
+        #
+        #     return ship.move(seek_n_nav.StartUp.get_initial_minimum_distance(ship, me, game_map, turn))
 
         # continuing transit for this ship to its final destination
         elif glo.Variables.current_assignments[ship.id].secondary_mission == glo.Missions.in_transit and \
@@ -144,25 +118,11 @@ class Core:
             c_queue_addition = ship.move(seek_n_nav.StartUp.get_initial_minimum_distance(ship, me, game_map, turn))
             glo.Misc.log_w_shid('core', 'debug', ship.id, " - get_initial_minimum_distance() returning: " +
                                 str(c_queue_addition))
-
             return c_queue_addition
 
-        # not sure what happened just yet
+        # not sure what happened just yet; enter the WTF clause
         else:
-            profit_dir = seek_n_nav.Nav.generate_profitable_offset(ship, game_map)
-            glo.Misc.loggit('core', 'debug', " -* ship.id: " + str(ship.id) + " **WTF**  ship history dump: " +
-                            str(glo.Variables.current_assignments[ship.id]) + "; full ship dump: " +
-                            str(ship))
-            glo.Variables.current_assignments[ship.id].set_ldps(ship.position,
-                                                                ship.position.directional_offset(profit_dir),
-                                                                glo.Missions.mining, glo.Missions.in_transit)
-            glo.Variables.current_assignments[ship.id].turnstamp = turn
-
-            # return ship.stay_still()
-            if ship.halite_amount < constants.MAX_HALITE and game_map[ship.position].halite_amount > 0:
-                return ship.stay_still()
-            else:
-                return ship.move(profit_dir)
+            return mining.CoreSupport.wtf_happened(ship, game_map, turn)
 
     @staticmethod
     def scuttle_for_finish(me, game_map, turn):

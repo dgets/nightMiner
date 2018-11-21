@@ -68,3 +68,37 @@ class Mine:
         glo.Variables.current_assignments[ship.id].turnstamp = turn
 
         return ship.stay_still()
+
+
+class CoreSupport:
+    """
+    Using this class as a home to modularize Core.primary_mission_mining(),
+    possibly other stuff afterwards as well.
+    """
+
+    @staticmethod
+    def wtf_happened(ship, game_map, turn):
+        """
+        Catch-all loop for Core.primary_mission_mining().
+
+        :param ship:
+        :param game_map:
+        :param turn:
+        :return: c_queue_addition
+        """
+
+        glo.Misc.loggit('core', 'debug', " -* ship.id: " + str(ship.id) + " **WTF**  ship history dump: " +
+                        str(glo.Variables.current_assignments[ship.id]) + "; full ship dump: " +
+                        str(ship))
+
+        profit_dir = seek_n_nav.Nav.generate_profitable_offset(ship, game_map)
+        glo.Variables.current_assignments[ship.id].set_ldps(ship.position,
+                                                            ship.position.directional_offset(profit_dir),
+                                                            glo.Missions.mining, glo.Missions.in_transit)
+        glo.Variables.current_assignments[ship.id].turnstamp = turn
+
+        if game_map[ship.position].halite_amount > 0 and not ship.is_full:
+            return ship.stay_still()
+        else:
+            return ship.move(game_map.naive_navigate(ship, ship.position.directional_offset(profit_dir)))
+
