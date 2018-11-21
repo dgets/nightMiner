@@ -193,6 +193,27 @@ class NavAssist:
             # position was not taken
             return dest_dir
 
+    @staticmethod
+    def avoid_if_ship_blocking(game_map, ship):
+        """
+        If there is a ship blocking the way, this routine will mark the cell as
+        unsafe, in order to avoid pawn formations in routines that are
+        utilizing .naive_navigate() without other fallbacks.
+
+        :param game_map:
+        :param ship:
+        :return:
+        """
+
+        # if game_map[ship.position.directional_offset(
+        #         game_map._get_target_direction(ship.position,
+        #                                        glo.Variables.current_assignments[ship.id].destination))].is_occupied:
+        for test_dir in game_map[ship.position].position.get_surrounding_cardinals():
+            if game_map[test_dir].is_occupied:
+                game_map[test_dir].mark_unsafe(ship)
+
+        return
+
 
 class Offense:
     """

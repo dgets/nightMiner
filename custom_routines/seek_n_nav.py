@@ -18,23 +18,6 @@ from . import myglobals as glo
 
 
 class Nav:
-    # @staticmethod
-    # def generate_random_offset(current_position):
-    #     """
-    #     Generates a random position w/in glo.Const.Initial_Scoot_Distance
-    #     of current_location, and returns it for navigation to a new location
-    #     w/in that distance
-    #
-    #     TODO: Get collision detection here
-    #
-    #     :param current_position: Position
-    #     :return: new Position destination
-    #     """
-    #
-    #     x_offset = random.randint(-glo.Const.Initial_Scoot_Distance, glo.Const.Initial_Scoot_Distance)
-    #     y_offset = random.randint(-glo.Const.Initial_Scoot_Distance, glo.Const.Initial_Scoot_Distance)
-    #
-    #     return Position(current_position.x + x_offset, current_position.y + y_offset)
     @staticmethod
     def generate_random_offset():
         """
@@ -44,7 +27,6 @@ class Nav:
         :return: Direction
         """
 
-        # return Direction(random.randint(-1, 1), random.randint(-1, 1))
         return random.choice([Direction.North, Direction.South, Direction.East, Direction.West])
 
     @staticmethod
@@ -63,12 +45,12 @@ class Nav:
         if new_dir is not None:
             glo.Misc.loggit('core', 'debug', " -* generate_profitable_offset() returning: " + str(new_dir) +
                             " from: analytics.HaliteAnalysis.find_best_dir()")
-            return new_dir
         else:
             new_dir = Nav.generate_random_offset(ship.position)
             glo.Misc.loggit('core', 'debug', " -* generate_profitable_offset() returning: " + str(new_dir) +
                             " from:  Nav.generate_random_offset()")
-            return new_dir
+
+        return new_dir
 
     @staticmethod
     def return_halite_to_shipyard(ship, me, game_map, turn):
@@ -89,6 +71,9 @@ class Nav:
         glo.Variables.current_assignments[ship.id].secondary_mission = glo.Missions.in_transit
         glo.Variables.current_assignments[ship.id].destination = me.shipyard.position
         glo.Variables.current_assignments[ship.id].turnstamp = turn
+
+        # avoid pawn formations
+        analytics.NavAssist.avoid_if_ship_blocking(game_map, ship)
 
         return ship.move(game_map.naive_navigate(ship, glo.Variables.current_assignments[ship.id].destination))
 
@@ -126,6 +111,9 @@ class Nav:
 
         glo.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **scooting** to " +
                         str(glo.Variables.current_assignments[ship.id].destination))
+
+        # is there a ship in the way?
+        analytics.NavAssist.avoid_if_ship_blocking(game_map, ship)
 
         return ship.move(game_map.naive_navigate(ship,
                                                  glo.Variables.current_assignments[ship.id].destination))
