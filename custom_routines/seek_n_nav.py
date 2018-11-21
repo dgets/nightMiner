@@ -167,7 +167,7 @@ class Offense:
             return ship.move(game_map.naive_navigate(ship, target_syard_pos))
         else:
             glo.Misc.log_w_shid('blockade', 'info', ship.id, " -* did not find enemy shipyard(s)")
-            
+
             return ship.move(game_map.naive_navigate(ship, Position(1, 1)))
 
 

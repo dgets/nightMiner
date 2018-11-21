@@ -15,7 +15,7 @@ import random
 import hlt
 from hlt import constants, Direction, Position
 
-from . import seek_n_nav, mining, history
+from . import seek_n_nav, mining, history, analytics
 from . import myglobals as glo
 
 
@@ -39,18 +39,7 @@ class Core:
 
         glo.Misc.loggit('any', 'info', "Hatched and swimming! Player ID is {}.".format(game.my_id))
 
-        # identify map data for Const storage and later retrieval
-        glo.Misc.loggit('preprocessing', 'info', "Scanning for enemy shipyards")
-        for x in range(0, glo.Const.Max_Chunk_Width):
-            for y in range(0, glo.Const.Max_Chunk_Height):
-                # check each map cell
-                # NOTE: this only verifies that it's not our shipyard, as no drops would exist yet
-                if game.game_map[Position(x, y)].structure_type is not None and \
-                        game.me.shipyard.position != Position(x, y):
-                    # there is a structure that is not ours
-                    glo.Misc.loggit('preprocessing', 'debug', "Enemy shipyard at: " + str(Position(x, y)))
-
-                    glo.Const.Enemy_Drops.append(Position(x, y))
+        analytics.Offense.scan_for_enemy_shipyards(game)
 
         return game
 
