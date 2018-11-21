@@ -19,9 +19,6 @@ from custom_routines import myglobals as glo
 # --==++** GAME BEGIN **++==--
 
 game = core_processing.Core.original_preprocessing()
-# max_turns = constants['MAX_TURNS']
-# glo.Misc.loggit('core', 'debug', "max_turns set to: " + str(max_turns)
-# glo.Misc.loggit('core', 'debug', "Max_Scuttle_Time set to: " + str(glo.Const.Max_Scuttle_Time))
 
 Max_Scuttle_Time = constants.MAX_TURNS - 25
 
@@ -48,9 +45,8 @@ while True:
     glo.Misc.loggit('core', 'debug', " Making sure turn (" + str(turn) + " <= " +
                           str(Max_Scuttle_Time - len(me.get_ships())) + ")")
 
-    # if not turn > (500 - game_map.width - (len(me.get_ships()) * 2)):
+    # we're not in the scuttle time crunch yet
     if not turn > (Max_Scuttle_Time - len(me.get_ships())):    # until glo issues are fixed
-        # we're not in the scuttle time crunch yet
         for ship in me.get_ships():
             kill_from_history_queue = []
 
@@ -73,73 +69,66 @@ while True:
                     continue
 
                 # we've transited to the shipyard/dropoff
-                elif glo.Variables.current_assignments[ship.id].secondary_mission == \
-                        glo.Missions.in_transit \
-                        and glo.Variables.current_assignments[ship.id].primary_mission == \
-                        glo.Missions.dropoff and \
-                        glo.Variables.current_assignments[ship.id].destination == ship.position and \
-                        ship.halite_amount > 0:
-                    # make the drop
-                    glo.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " making drop @ " +
-                                          str(ship.position))
-                    kill_from_history_queue.append(ship.id)
-
-                    # now we've got to wipe that from the current_assignments
-                    # to make sure that it's properly reassigned the next time
-                    # around
-                    if glo.Variables.current_assignments.pop(ship.id, None) is None:
-                        glo.Misc.loggit('core', 'debug', " -* ship.id: " + str(ship.id) + " was found in an " +
-                                              "invalid state (no current_assignments entry)!")  # should throw exception
-
-                    continue
+                # NOTE: I believe this is an invalid code path
+                # elif glo.Variables.current_assignments[ship.id].secondary_mission == \
+                #         glo.Missions.in_transit \
+                #         and glo.Variables.current_assignments[ship.id].primary_mission == \
+                #         glo.Missions.dropoff and \
+                #         glo.Variables.current_assignments[ship.id].destination == ship.position and \
+                #         ship.halite_amount > 0:
+                #     # make the drop
+                #     glo.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " making drop @ " +
+                #                           str(ship.position))
+                #
+                #     kill_from_history_queue.append(ship.id)
+                #
+                #     if glo.Variables.current_assignments.pop(ship.id, None) is None:
+                #         glo.Misc.loggit('core', 'debug', " -* ship.id: " + str(ship.id) + " was found in an " +
+                #                               "invalid state (no current_assignments entry)!")  # should throw exception
+                #
+                #     continue
 
                 elif game_map.normalize(glo.Variables.current_assignments[ship.id].destination) == ship.position \
                         and glo.Variables.current_assignments[ship.id].primary_mission != \
                         glo.Missions.dropoff and not ship.is_full:
-                    # mine
+                    # mining time
                     glo.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **mining** @ " +
                                     str(ship.position))
                     glo.Variables.current_assignments[ship.id] = history.ShipHistory(ship.id, ship.position,
                                                                                            None, turn,
                                                                                            glo.Missions.mining,
                                                                                            glo.Missions.busy)
+
                     command_queue.append(ship.stay_still())
                     continue
 
                 elif glo.Variables.current_assignments[ship.id].primary_mission == glo.Missions.dropoff \
                         and ship.position != me.shipyard.position:
-                    # head to drop off the halite
+                    # head to drop off the halite & drop it off
                     glo.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " in **transit to drop**")
                     command_queue.append(seek_n_nav.Nav.return_halite_to_shipyard(ship, me, game_map, turn))
                     continue
 
+                # dropped the halite
                 elif glo.Variables.current_assignments[ship.id].primary_mission == glo.Missions.dropoff \
                         and ship.position == me.shipyard.position:
-                    # drop off the fucking halite HERE then, if nothing else
-                    glo.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " DROP the BONE")
-                    # kill_from_history_queue.append(ship.id)
+                    glo.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " DROPPED the BONE")
 
                     try:
                         command_queue.append(
                             ship.move(seek_n_nav.StartUp.get_initial_minimum_distance(ship, me, game_map, turn)))
                     except:
+                        # not so sure this code path is utilized any more
                         command_queue.append(ship.move(glo.Misc.r_dir_choice()))
-
-                    # this all should be handled from core_processing
 
                     continue
 
             except KeyError:
-                # set everybody to mining, first of all
+                # set everybody to mining (after getting distance), first of all
                 command_queue.append(seek_n_nav.StartUp.get_initial_minimum_distance(ship, me, game_map, turn))
 
             glo.Misc.loggit('core', 'debug', " - found and processed ship: " + str(ship.id))
 
-        #glo.Misc.loggit('core', 'debug', "verifying that turn " + str(turn) + " <= " +
-        #                      str(constants.MAX_TURNS % 2) + " and halite " + str(me.halite_amount) + " >= " +
-        #                      str(glo.Const.Enough_Ore_To_Spawn))
-
-        #if turn <= (constants.MAX_TURNS % 2) and me.halite_amount >= glo.Const.Enough_Ore_To_Spawn \
         if turn <= 250 and me.halite_amount >= glo.Const.Enough_Ore_To_Spawn  \
                 and not game_map[me.shipyard].is_occupied:
             glo.Misc.loggit('core', 'debug', " - spawning ship")
@@ -154,17 +143,10 @@ while True:
         glo.Misc.loggit('core', 'debug', "Killing from history due to ship 8-x: " + str(new_kill_list_additions))
         if new_kill_list_additions is not None:
             kill_from_history_queue += new_kill_list_additions
-
-    # elif ship.halite_amount < constants.MAX_HALITE - 100:
-    #     glo.Misc.loggit('core', 'debug', "Made scuttle drop; keeping busy until the end now")
-    #     # no collision detection, let's just see how this works for now
-    #     command_queue.append(ship.move(seek_n_nav.Nav.generate_profitable_offset(ship, game_map)))
-    #     # if this is too chaotic we can just head for (0, 0) or something for
-    #     # now...
     else:
         glo.Misc.loggit('core', 'debug', "Entered the scuttle race clause")
-        # scuttle everybody home and avoid the clusterfsck
-        command_queue = core_processing.Core.scuttle_for_finish(me, game_map, turn)
+        # scuttle everybody home and avoid the clusterfsck by blockade or pringles
+        command_queue = seek_n_nav.Nav.ScuttleSupport.scuttle_for_finish(me, game_map, turn)
 
     turn += 1
     game.end_turn(command_queue)

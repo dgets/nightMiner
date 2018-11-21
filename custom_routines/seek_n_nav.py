@@ -129,9 +129,71 @@ class Nav:
 
         return ship.move(game_map.naive_navigate(ship,
                                                  glo.Variables.current_assignments[ship.id].destination))
-        # return Nav.less_dumb_move(ship, game_map.naive_navigate(ship,
-        #                                                         glo.Variables.current_assignments[ship.id].
-        #                                                         destination), game_map)
+
+    class ScuttleSupport:
+        """
+        Holds the navigation routines utilized in Core.scuttle_for_finish()
+        """
+
+        @staticmethod
+        def scuttle_for_finish(me, game_map, turn):
+            """
+            Run back home to the shipyard (or later the dropoff) in order to return
+            halite ore before the end of the game.
+
+            TODO: add dropoff support
+
+            :param me:
+            :param game_map:
+            :param turn:
+            :return:
+            """
+
+            # NOTE: this routine will not work in conjunction with the other
+            # normal ship in me.get_ships() game routine
+            c_queue = []
+
+            history.Misc.kill_dead_ships(me)
+
+            for ship in me.get_ships():
+                if glo.Variables.current_assignments[ship.id].primary_mission == glo.Missions.get_distance:
+                    glo.Misc.loggit('scuttle', 'info',
+                                    " - ship.id: " + str(ship.id) + " getting away from shipyard to " +
+                                    glo.Variables.current_assignments[ship.id].destination)
+
+                    c_queue.append(ship.move(game_map.naive_navigate(ship,
+                                                                     glo.Variables.current_assignments[ship.id].
+                                                                     destination)))
+
+                # head to the blockade
+                # elif ship.position == me.shipyard.position and \
+                #         ship.halite_amount <= constants.MAX_HALITE - 100:
+                elif ship.halite_amount <= 350:
+                    glo.Variables.current_assignments[ship.id].primary_mission = glo.Missions.blockade
+                    glo.Variables.current_assignments[ship.id].secondary_mission = glo.Missions.in_transit
+                    glo.Variables.current_assignments[ship.id].turnstamp = turn
+
+                    c_queue.append(Offense.blockade_enemy_drops(ship, game_map))
+
+                # head back to the drop, it's scuttle time
+                elif glo.Variables.current_assignments[ship.id].primary_mission != glo.Missions.scuttle:
+                    glo.Misc.loggit('scuttle', 'info', " - ship.id: " + str(ship.id) + " heading back to drop")
+                    glo.Variables.current_assignments[ship.id].primary_mission = glo.Missions.scuttle
+                    glo.Variables.current_assignments[ship.id].secondary_mission = glo.Missions.in_transit
+                    glo.Variables.current_assignments[ship.id].turnstamp = turn
+                    glo.Variables.current_assignments[ship.id].destination = me.shipyard.position
+
+                    c_queue.append(ship.move(game_map.naive_navigate(ship, me.shipyard.position)))
+
+                # already scuttling, keep it up
+                else:
+                    glo.Misc.loggit('scuttle', 'info', " - ship.id: " + str(ship.id) + " en route back to drop")
+                    c_queue.append(ship.move(game_map.naive_navigate(ship, me.shipyard.position)))
+
+                    # after we try this with naive_navigate we'll give it a shot with
+                    # an implementation using seek_n_nav's less_dumb_move(), as well
+
+            return c_queue
 
 
 class Offense:
