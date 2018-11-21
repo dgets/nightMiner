@@ -6,7 +6,7 @@ started 8nov18
 Class will hold different (dumb) analytic routines.
 """
 
-from hlt import Position, Direction
+from hlt import Position, Direction, entity
 
 from . import seek_n_nav
 from . import myglobals as glo
@@ -192,3 +192,39 @@ class NavAssist:
         else:
             # position was not taken
             return dest_dir
+
+
+class Offense:
+    """
+    Offensive analytics.
+    """
+
+    @staticmethod
+    def scan_for_enemy_shipyards(game):
+        # identify map data for Const storage and later retrieval
+        glo.Misc.loggit('preprocessing', 'info', "Scanning for enemy shipyards")
+
+        # for x in range(0, game.game_map.width):
+        #     glo.Misc.loggit('preprocessing', 'debug', " - scanning column: " + str(x))
+        #     for y in range(0, game.game_map.height):
+        #         # check each map cell
+        #         glo.Misc.loggit('preprocessing', 'debug', "  - scanning cell: " + str(Position(x, y)))
+        #         if game.game_map[Position(x, y)].has_structure:
+        #             glo.Misc.loggit('preprocessing', 'debug', "  -* _HAS_ structure")
+        #
+        #         # NOTE: this only verifies that it's not our shipyard, as no drops would exist yet
+        #         if game.game_map[Position(x, y)].structure_type is not None and \
+        #                 game.me.shipyard.position != Position(x, y):
+        #             # there is a structure that is not ours
+        #             glo.Misc.loggit('preprocessing', 'debug', "Enemy shipyard at: " + str(Position(x, y)))
+        #
+        #             glo.Const.Enemy_Drops.append(Position(x, y))
+
+        # this is a whole lot easier
+        for player in game.players.values():
+            if player is not game.me:
+                glo.Misc.loggit('preprocessing', 'debug', " - found shipyard @ " +
+                                str(player.shipyard) + " belonging to player: " + str(player.id))
+                glo.Const.Enemy_Drops.append(player.shipyard.position)
+
+        return
