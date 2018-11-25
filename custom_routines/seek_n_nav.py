@@ -149,6 +149,7 @@ class Nav:
                                     " - ship.id: " + str(ship.id) + " getting away from shipyard to " +
                                     glo.Variables.current_assignments[ship.id].destination)
 
+                    analytics.NavAssist.avoid_if_ship_blocking(game_map, ship)
                     c_queue.append(ship.move(game_map.naive_navigate(ship,
                                                                      glo.Variables.current_assignments[ship.id].
                                                                      destination)))
@@ -156,11 +157,12 @@ class Nav:
                 # head to the blockade
                 # elif ship.position == me.shipyard.position and \
                 #         ship.halite_amount <= constants.MAX_HALITE - 100:
-                elif ship.halite_amount <= 350:
+                elif ship.halite_amount < 350:
                     glo.Variables.current_assignments[ship.id].primary_mission = glo.Missions.blockade
                     glo.Variables.current_assignments[ship.id].secondary_mission = glo.Missions.in_transit
                     glo.Variables.current_assignments[ship.id].turnstamp = turn
 
+                    # NOTE: avoid_if_ship_blocking() is called in Offense.blockade_enemy_drops()
                     c_queue.append(Offense.blockade_enemy_drops(ship, game_map))
 
                 # head back to the drop, it's scuttle time
@@ -171,15 +173,17 @@ class Nav:
                     glo.Variables.current_assignments[ship.id].turnstamp = turn
                     glo.Variables.current_assignments[ship.id].destination = me.shipyard.position
 
+                    analytics.NavAssist.avoid_if_ship_blocking(game_map, ship)
+
                     c_queue.append(ship.move(game_map.naive_navigate(ship, me.shipyard.position)))
 
                 # already scuttling, keep it up
                 else:
                     glo.Misc.loggit('scuttle', 'info', " - ship.id: " + str(ship.id) + " en route back to drop")
-                    c_queue.append(ship.move(game_map.naive_navigate(ship, me.shipyard.position)))
 
-                    # after we try this with naive_navigate we'll give it a shot with
-                    # an implementation using seek_n_nav's less_dumb_move(), as well
+                    analytics.NavAssist.avoid_if_ship_blocking(game_map, ship)
+
+                    c_queue.append(ship.move(game_map.naive_navigate(ship, me.shipyard.position)))
 
             return c_queue
 
@@ -212,6 +216,8 @@ class Offense:
                                     str(enemy_syard_pos))
                 dist = game_map.calculate_distance(ship.position, enemy_syard_pos)
                 target_syard_pos = enemy_syard_pos
+
+        analytics.NavAssist.avoid_if_ship_blocking(game_map, ship)
 
         if target_syard_pos is not None:
             return ship.move(game_map.naive_navigate(ship, target_syard_pos))

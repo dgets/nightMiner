@@ -53,7 +53,7 @@ class Variables:
     """
 
     current_assignments = {}   # contains { id: ShipHistory }
-    considered_destinations = []
+    barred_destinations = []
 
 
 class Missions(Enum):
@@ -122,14 +122,30 @@ class Misc:
     @staticmethod
     def add_barred_destination(direction, ship):
         """
-        Method adds another destination to the considered_destinations list.
+        Method adds another destination to the barred_destinations list.
 
-        TODO: rename considered_destinations to something more intuitive
+        NOTE: renamed considered_destinations to barred_destinations
 
         :param direction:
         :param ship:
         :return:
         """
-        Variables.considered_destinations.append(ship.position.directional_offset(direction))
+        Variables.barred_destinations.append(ship.position.directional_offset(direction))
 
         return
+
+    @staticmethod
+    def is_already_barred(direction, ship):
+        """
+        Determines whether or not the destination being considered has been
+        decided upon by a previous ship in this turn already.
+
+        :param direction:
+        :param ship:
+        :return: True if yes, etc
+        """
+
+        if ship.position.directional_offset(direction) in Variables.barred_destinations:
+            return True
+        else:
+            return False

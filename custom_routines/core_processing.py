@@ -15,7 +15,7 @@ import random
 import hlt
 from hlt import constants, Direction, Position
 
-from . import seek_n_nav, mining, history, analytics
+from . import seek_n_nav, mining, analytics
 from . import myglobals as glo
 
 

@@ -6,6 +6,8 @@ started 9nov18
 Mining algorithm internals.
 """
 
+from hlt import Direction
+
 from . import seek_n_nav, analytics
 from . import myglobals as glo
 
@@ -32,26 +34,39 @@ class Mine:
                             str(glo.Variables.current_assignments[ship.id]))
 
         # new_pos = ship.position.directional_offset(analytics.HaliteAnalysis.find_best_dir(ship, game_map))
-        new_dir = analytics.NavAssist.avoid_collision_by_random_scoot(
-            seek_n_nav.Nav.generate_profitable_offset(ship, game_map), ship)
+        # new_dir = analytics.NavAssist.avoid_collision_by_random_scoot(
+        #     seek_n_nav.Nav.generate_profitable_offset(ship, game_map), ship)
+        #
+        # if new_dir is None:
+        #     glo.Misc.loggit('core', 'debug', " -* staying still for collision avoidance")
+        #     return ship.stay_still()
+        #
+        # new_pos = ship.position.directional_offset(new_dir)
+        # glo.Misc.loggit('core', 'debug', " -* new_pos contents: " + str(new_pos))
+        #
+        # # random.choice([Direction.North, Direction.South, Direction.East, Direction.West])
+        # glo.Variables.current_assignments[ship.id].destination = new_pos
+        # glo.Variables.current_assignments[ship.id].secondary_mission = glo.Missions.in_transit
+        # glo.Variables.current_assignments[ship.id].turnstamp = turn
+        #
+        # glo.Misc.log_w_shid('seek', 'debug', ship.id, " ShipHistory after processing-->" +
+        #                     str(glo.Variables.current_assignments[ship.id]))
 
-        if new_dir is None:
-            glo.Misc.loggit('core', 'debug', " -* staying still for collision avoidance")
-            return ship.stay_still()
+        for tmp_dir in Direction.get_all_cardinals():
+            # [Direction.North, Direction.South, Direction.East, Direction.West]:
+            if game_map[ship.position.directional_offset(tmp_dir)].is_occupied:
+                # we can return our pseudo-random direction
 
-        new_pos = ship.position.directional_offset(new_dir)
-        glo.Misc.loggit('core', 'debug', " -* new_pos contents: " + str(new_pos))
+                glo.Misc.add_barred_destination(tmp_dir, ship)
 
-        # random.choice([Direction.North, Direction.South, Direction.East, Direction.West])
-        glo.Variables.current_assignments[ship.id].destination = new_pos
-        glo.Variables.current_assignments[ship.id].secondary_mission = glo.Missions.in_transit
-        glo.Variables.current_assignments[ship.id].turnstamp = turn
+        return ship.move(game_map.naive_navigate(ship,
+                         game_map[ship.position.directional_offset(glo.Misc.r_dir_choice())].position))
 
-        glo.Misc.log_w_shid('seek', 'debug', ship.id, " ShipHistory after processing-->" +
-                            str(glo.Variables.current_assignments[ship.id]))
-
+        # for new_pos in ship.position. .get_surrounding_cardinals():
+        #     glo.Misc.add_barred_destination(new_pos.)
+        #
         # return seek_n_nav.Nav.less_dumb_move(ship, glo.Misc.r_dir_choice(), game_map)
-        return ship.move(new_dir)
+        # return ship.move(new_dir)
 
     @staticmethod
     def done_with_transit_now_mine(ship, turn):
@@ -100,5 +115,7 @@ class CoreSupport:
         if game_map[ship.position].halite_amount > 0 and not ship.is_full:
             return ship.stay_still()
         else:
+            analytics.NavAssist.avoid_if_ship_blocking(game_map, ship)
+
             return ship.move(game_map.naive_navigate(ship, ship.position.directional_offset(profit_dir)))
 
