@@ -87,14 +87,35 @@ class MapChunk:
         :param map:
         :return:
         """
+
         for x in range(self.x_start, self.x_start + self.Width - 1):
             for y in range(self.y_start, self.y_start - self.Height):
                 if map[Position(x, y)].halite_amount == 0:
                     map[Position(x, y)].mark_unsafe(ship)
 
+    def find_most_profitable(self, game_map):
+        """
+        Method returns the position of the most profitable halite mining
+        location in the MapChunk we're working with, or none if everything is
+        empty.
+
+        :return:
+        """
+
+        max_halite = 0
+        max_halite_position = None
+
+        for x in range(self.x_start, self.x_start + self.Width - 1):
+            for y in range(self.y_start, self.y_start - self.Height):
+                if game_map[Position(x, y)].halite_amount > max_halite_position:
+                    max_halite = game_map[Position(x, y)].halite_amount
+                    max_halite_position = Position(x, y)
+
+        return max_halite_position
+
     @staticmethod
-    def create_centered_chunk(me, ship, map):
-        return MapChunk(me, map, ship.position.x - (MapChunk.Width % 2), ship.position.y - (MapChunk.Height % 2))
+    def create_centered_chunk(me, ship, game_map):
+        return MapChunk(me, game_map, ship.position.x - (MapChunk.Width % 2), ship.position.y - (MapChunk.Height % 2))
 
 
 class HaliteAnalysis:
