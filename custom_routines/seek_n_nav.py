@@ -163,7 +163,7 @@ class Nav:
                     glo.Variables.current_assignments[ship.id].turnstamp = turn
 
                     # NOTE: avoid_if_ship_blocking() is called in Offense.blockade_enemy_drops()
-                    c_queue.append(Offense.blockade_enemy_drops(ship, game_map))
+                    c_queue.append(Offense.blockade_enemy_drops(ship, game_map, me))
 
                 # head back to the drop, it's scuttle time
                 elif glo.Variables.current_assignments[ship.id].primary_mission != glo.Missions.scuttle:
@@ -190,7 +190,7 @@ class Nav:
 
 class Offense:
     @staticmethod
-    def blockade_enemy_drops(ship, game_map):
+    def blockade_enemy_drops(ship, game_map, me):
         """
         Method will identify the enemy shipyard locations, determine which are
         best for a timely blockade, and send ships that have completed their
@@ -207,18 +207,26 @@ class Offense:
         glo.Misc.log_w_shid('blockade', 'info', ship.id, " - entered blockade_enemy_drops()")
 
         target_syard_pos = None
+        target_syard_num = -1
         dist = game_map.width * 2 + 1  # ObDistanceBiggerThanGamesMaxDist
 
         # determine the closest shipyard
-        for enemy_syard_pos in glo.Const.Enemy_Drops:
-            if game_map.calculate_distance(ship.position, enemy_syard_pos) < dist:
-                glo.Misc.log_w_shid('blockade', 'info', ship.id, " -* found close(er) shipyard at: " +
-                                    str(enemy_syard_pos))
-                dist = game_map.calculate_distance(ship.position, enemy_syard_pos)
-                target_syard_pos = enemy_syard_pos
+        # for enemy_syard_pos in glo.Const.Enemy_Drops:
+        #     if game_map.calculate_distance(ship.position, enemy_syard_pos) < dist:
+        #         glo.Misc.log_w_shid('blockade', 'info', ship.id, " -* found close(er) shipyard at: " +
+        #                             str(enemy_syard_pos))
+        #         dist = game_map.calculate_distance(ship.position, enemy_syard_pos)
+        #         target_syard_pos = enemy_syard_pos
+
+        # determine an appropriate shipyard for adequate spread between them
+        for offensive_ship in me.get_ships():
+            target_syard_num += 1
+            if target_syard_num >= len(glo.Const.Enemy_Drops):
+                target_syard_num = 0
+
+            target_syard_pos = glo.Const.Enemy_Drops[target_syard_num]
 
         analytics.NavAssist.avoid_if_ship_blocking(game_map, ship)
-
         if target_syard_pos is not None:
             return ship.move(game_map.naive_navigate(ship, target_syard_pos))
         else:

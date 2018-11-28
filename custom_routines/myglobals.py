@@ -18,6 +18,7 @@ class Const:
     """
     global constants
     """
+
     DEBUGGING = {
         'preprocessing': True,
         'core': True,
@@ -52,8 +53,8 @@ class Variables:
     global variables
     """
 
-    current_assignments = {}   # contains { id: ShipHistory }
-    barred_destinations = []
+    current_assignments = {}    # contains { id: ShipHistory }
+    barred_destinations = []    # note that this is not fully implemented yet
 
 
 class Missions(Enum):
