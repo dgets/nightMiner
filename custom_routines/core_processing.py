@@ -97,16 +97,6 @@ class Core:
                                                                 glo.Missions.dropoff, glo.Missions.in_transit)
             return seek_n_nav.Nav.return_halite_to_shipyard(ship, me, game_map, turn)
 
-        # transit back to the shipyard #2 (log & determine which one of these 2 to ditch, presuming both
-        # aren't somehow being utilized)
-        # elif ship.halite_amount >= 900 and game_map[ship.position].halite_amount == 0:
-        #     # not sure why we're still in this loop, but drop off the goddamned halite
-        #     glo.Misc.loggit('core', 'debug', " -* ship.id: " + str(ship.id) + " **making drop** " +
-        #                     "from within the **mining** loop for some reason")
-        #     # now, obviously, we need to obtain minimum distance again and go back about our rounds
-        #
-        #     return ship.move(seek_n_nav.StartUp.get_initial_minimum_distance(ship, me, game_map, turn))
-
         # continuing transit for this ship to its final destination
         elif glo.Variables.current_assignments[ship.id].secondary_mission == glo.Missions.in_transit and \
                 glo.Variables.current_assignments[ship.id].turnstamp <= (turn + glo.Const.Initial_Scoot_Distance * 2) \

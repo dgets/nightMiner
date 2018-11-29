@@ -35,7 +35,20 @@ class MapChunk:
     has_shipyard = None
     has_dropoff = None
 
-    def __init__(self, me, map, init_x, init_y):
+    def __init__(self, me, game_map, init_x, init_y):
+        """
+        It should be noted at this point that self.cell_data[x][y] =
+        halite_amount is not going to be an effective utilization of this
+        object.  cell_data[x][y] should point to a dict, of which the
+        halite content of the cell will be one of the things stored.
+
+        TODO: Implement effective MapChunk data structure
+
+        :param me:
+        :param game_map:
+        :param init_x:
+        :param init_y:
+        """
         # NOTE: init will need to be run again after a shipyard or dropoff is
         # built within this chunk
 
@@ -47,7 +60,7 @@ class MapChunk:
         for x in range(0, self.Width - 1):
             for y in range(0, self.Height - 1):
                 # determine halite amount
-                self.cell_data[x][y] = map[Position(x + self.x_start, y + self.y_start)].halite_amount
+                self.cell_data[x][y] = game_map[Position(x + self.x_start, y + self.y_start)].halite_amount
 
                 # structures?
                 if Position(x + self.x_start, y + self.y_start).has_structure and not (self.has_shipyard and
@@ -74,7 +87,7 @@ class MapChunk:
                     if self.has_dropoff is None:
                         self.has_dropoff = False
 
-    def mark_devoid_cells(self, ship, map):
+    def mark_devoid_cells(self, ship, game_map):
         """
         Method goes through the cells in this particular chunk and, for this
         ship, marks them as 'unsafe' when they have no halite, in order to
@@ -84,14 +97,14 @@ class MapChunk:
         a path to percolate through.
 
         :param ship:
-        :param map:
+        :param game_map:
         :return:
         """
 
         for x in range(self.x_start, self.x_start + self.Width - 1):
             for y in range(self.y_start, self.y_start - self.Height):
-                if map[Position(x, y)].halite_amount == 0:
-                    map[Position(x, y)].mark_unsafe(ship)
+                if game_map[Position(x, y)].halite_amount == 0:
+                    game_map[Position(x, y)].mark_unsafe(ship)
 
     def find_most_profitable(self, game_map):
         """
@@ -107,7 +120,7 @@ class MapChunk:
 
         for x in range(self.x_start, self.x_start + self.Width - 1):
             for y in range(self.y_start, self.y_start - self.Height):
-                if game_map[Position(x, y)].halite_amount > max_halite_position:
+                if game_map[Position(x, y)].halite_amount > max_halite:
                     max_halite = game_map[Position(x, y)].halite_amount
                     max_halite_position = Position(x, y)
 
@@ -132,10 +145,16 @@ class HaliteAnalysis:
         that this will be taking into account whether or not that cell is
         currently occupied.
 
+        NOTE: That this should be rendered obsolete by implementation of
+        MapChunk properly, as that'll be scanning an arbitrary sized grid for
+        the best halite amount.  This will have to do until we can scan for
+        local maxima.
+
         :param ship:
         :param game_map:
         :return: Direction
         """
+
         halite_best = 0
         best_dir = seek_n_nav.Nav.generate_random_offset()
 
@@ -179,6 +198,7 @@ class NavAssist:
         :param ship:
         :return: Direction or None
         """
+
         if ship.position.directional_offset(dest_dir) in glo.Variables.considered_destinations:
             return None
         else:
@@ -197,6 +217,7 @@ class NavAssist:
         :param ship:
         :return: Direction or None
         """
+
         if ship.position.directional_offset(dest_dir) in glo.Variables.considered_destinations:
             # position is already taken
 
@@ -246,27 +267,13 @@ class Offense:
         # identify map data for Const storage and later retrieval
         glo.Misc.loggit('preprocessing', 'info', "Scanning for enemy shipyards")
 
-        # for x in range(0, game.game_map.width):
-        #     glo.Misc.loggit('preprocessing', 'debug', " - scanning column: " + str(x))
-        #     for y in range(0, game.game_map.height):
-        #         # check each map cell
-        #         glo.Misc.loggit('preprocessing', 'debug', "  - scanning cell: " + str(Position(x, y)))
-        #         if game.game_map[Position(x, y)].has_structure:
-        #             glo.Misc.loggit('preprocessing', 'debug', "  -* _HAS_ structure")
-        #
-        #         # NOTE: this only verifies that it's not our shipyard, as no drops would exist yet
-        #         if game.game_map[Position(x, y)].structure_type is not None and \
-        #                 game.me.shipyard.position != Position(x, y):
-        #             # there is a structure that is not ours
-        #             glo.Misc.loggit('preprocessing', 'debug', "Enemy shipyard at: " + str(Position(x, y)))
-        #
-        #             glo.Const.Enemy_Drops.append(Position(x, y))
-
         # this is a whole lot easier
         for player in game.players.values():
             if player is not game.me:
                 glo.Misc.loggit('preprocessing', 'debug', " - found shipyard @ " +
                                 str(player.shipyard) + " belonging to player: " + str(player.id))
                 glo.Const.Enemy_Drops.append(player.shipyard.position)
+
+        glo.Misc.loggit('preprocessing', 'info', " - found " + str(len(game.players)) + " total players")
 
         return

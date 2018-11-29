@@ -20,7 +20,8 @@ from custom_routines import myglobals as glo
 
 game = core_processing.Core.original_preprocessing()
 
-Max_Scuttle_Time = constants.MAX_TURNS - 25
+# unable to properly set in glo
+Max_Scuttle_Time = constants.MAX_TURNS - 25  # TODO: tweak for efficiency
 
 turn: int = 0
 
@@ -42,8 +43,8 @@ while True:
     # clear up other potential crap
     c_queue_addition = None
 
-    glo.Misc.loggit('core', 'debug', " Making sure turn (" + str(turn) + " <= " +
-                          str(Max_Scuttle_Time - len(me.get_ships())) + ")")
+    glo.Misc.loggit('core', 'debug', " Making sure turn (" + str(turn) + " <= " + str(Max_Scuttle_Time -
+                                                                                      len(me.get_ships())) + ")")
 
     # we're not in the scuttle time crunch yet
     if not turn > (Max_Scuttle_Time - len(me.get_ships())):    # until glo issues are fixed
@@ -68,26 +69,6 @@ while True:
 
                     continue
 
-                # we've transited to the shipyard/dropoff
-                # NOTE: I believe this is an invalid code path
-                # elif glo.Variables.current_assignments[ship.id].secondary_mission == \
-                #         glo.Missions.in_transit \
-                #         and glo.Variables.current_assignments[ship.id].primary_mission == \
-                #         glo.Missions.dropoff and \
-                #         glo.Variables.current_assignments[ship.id].destination == ship.position and \
-                #         ship.halite_amount > 0:
-                #     # make the drop
-                #     glo.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " making drop @ " +
-                #                           str(ship.position))
-                #
-                #     kill_from_history_queue.append(ship.id)
-                #
-                #     if glo.Variables.current_assignments.pop(ship.id, None) is None:
-                #         glo.Misc.loggit('core', 'debug', " -* ship.id: " + str(ship.id) + " was found in an " +
-                #                               "invalid state (no current_assignments entry)!")  # should throw exception
-                #
-                #     continue
-
                 elif game_map.normalize(glo.Variables.current_assignments[ship.id].destination) == ship.position \
                         and glo.Variables.current_assignments[ship.id].primary_mission != \
                         glo.Missions.dropoff and not ship.is_full:
@@ -95,9 +76,8 @@ while True:
                     glo.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **mining** @ " +
                                     str(ship.position))
                     glo.Variables.current_assignments[ship.id] = history.ShipHistory(ship.id, ship.position,
-                                                                                           None, turn,
-                                                                                           glo.Missions.mining,
-                                                                                           glo.Missions.busy)
+                                                                                     None, turn, glo.Missions.mining,
+                                                                                     glo.Missions.busy)
 
                     command_queue.append(ship.stay_still())
                     continue

@@ -224,7 +224,7 @@ class Offense:
             if target_syard_num >= len(glo.Const.Enemy_Drops):
                 target_syard_num = 0
 
-            target_syard_pos = glo.Const.Enemy_Drops[target_syard_num]
+        target_syard_pos = glo.Const.Enemy_Drops[target_syard_num]
 
         analytics.NavAssist.avoid_if_ship_blocking(game_map, ship)
         if target_syard_pos is not None:
