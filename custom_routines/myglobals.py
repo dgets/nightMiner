@@ -41,16 +41,14 @@ class Const:
     Max_Chunk_Width = Initial_Scoot_Distance
     Max_Chunk_Height = Initial_Scoot_Distance
     # Max_Scuttle_Time = constants.MAX_TURNS - (Game.game_map.width * 2)
-    # Max_Scuttle_Time = constants.MAX_TURNS - (40 * 2)  # until above works
-    # NOTE: the above will need to have the # of living ships * 2 added to it,
-    # so that they can all get in to dropoff and get out of each others way,
-    # so long as we're only dealing with the one shipyard & no dropoffs
     Enemy_Drops = []
 
 
 class Variables:
     """
     global variables
+
+    TODO: add barred_destinations consideration in order to prevent pawn forms
     """
 
     current_assignments = {}    # contains { id: ShipHistory }
@@ -61,6 +59,7 @@ class Missions(Enum):
     """
     global mission assignment categories
     """
+
     in_transit = 1
     mining = 2
     dropoff = 3
@@ -131,6 +130,7 @@ class Misc:
         :param ship:
         :return:
         """
+
         Variables.barred_destinations.append(ship.position.directional_offset(direction))
 
         return

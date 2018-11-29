@@ -60,8 +60,7 @@ class Mine:
         :return: stay_still()
         """
 
-        glo.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **mining** at " +
-                              str(ship.position))
+        glo.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **mining** at " + str(ship.position))
         glo.Variables.current_assignments[ship.id].secondary_mission = glo.Missions.busy
         glo.Variables.current_assignments[ship.id].turnstamp = turn
 

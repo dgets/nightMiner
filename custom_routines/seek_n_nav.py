@@ -8,7 +8,6 @@ routines for general seeking out of halite ore resources w/basic resource
 location determination and navigation to it
 """
 
-
 import random
 
 from hlt import Direction, Position
@@ -65,7 +64,7 @@ class Nav:
         :return:
         """
         glo.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) +
-                              " **returning to shipyard** at " + str(me.shipyard.position))
+                        " **returning to shipyard** at " + str(me.shipyard.position))
 
         glo.Variables.current_assignments[ship.id].primary_mission = glo.Missions.dropoff
         glo.Variables.current_assignments[ship.id].secondary_mission = glo.Missions.in_transit
@@ -88,6 +87,7 @@ class Nav:
         :param game_map:
         :return:
         """
+
         next_dir = analytics.NavAssist.avoid_collision_by_random_scoot(direction, ship)
         if next_dir is not None:
             next_dest = game_map[ship.position.directional_offset(direction)]
@@ -155,8 +155,6 @@ class Nav:
                                                                      destination)))
 
                 # head to the blockade
-                # elif ship.position == me.shipyard.position and \
-                #         ship.halite_amount <= constants.MAX_HALITE - 100:
                 elif ship.halite_amount < 350:
                     glo.Variables.current_assignments[ship.id].primary_mission = glo.Missions.blockade
                     glo.Variables.current_assignments[ship.id].secondary_mission = glo.Missions.in_transit
@@ -251,7 +249,6 @@ class StartUp:
 
         glo.Misc.loggit('core', 'debug', " - fell into except; **setting new ship id: " + str(ship.id) +
                         " to mining**")
-        # glo.Misc.loggit('core', 'debug', " -* ke: " + str(key_exception))
 
         tmp_destination_dir = Nav.generate_profitable_offset(ship, game_map)
         glo.Misc.loggit('core', 'debug', " -** tmp_destination_dir contents: " + str(tmp_destination_dir))
@@ -274,9 +271,6 @@ class StartUp:
                                                                          inc_pos, turn, glo.Missions.mining,
                                                                          glo.Missions.in_transit)
 
-        # return ship.move(random.choice([Direction.North, Direction.South, Direction.East, Direction.West]))
-        # while ship.position.directional_offset(tmp_destination_dir) in glo.Variables.considered_destinations:
-        #     tmp_destination_dir = glo.Misc.r_dir_choice()
         tmp_destination_dir = analytics.NavAssist.avoid_collision_by_random_scoot(tmp_destination_dir, ship)
         if tmp_destination_dir is None:
             return ship.stay_still()
