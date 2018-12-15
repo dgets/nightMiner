@@ -230,3 +230,31 @@ class Offense:
 
         return
 
+    @staticmethod
+    def can_we_early_blockade(game):
+        """
+        Method returns true if we can spare enough ships to continue mining
+        while blockading the enemy shipyards, false if otherwise.
+
+        :param game:
+        :return: Boolean
+        """
+
+        if len(game.me.get_ships()) > ((len(game.players.values()) - 1) * 4):
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def early_blockade(me, ship, game, game_map):
+        """
+        If we've got the ships to blockade at this point, we'll return the
+        navigation command for this ship to take its rightful place.
+
+        :param me:
+        :param ship:
+        :param game:
+        :param game_map:
+        :return: None or cqueue_addition
+        """
+
