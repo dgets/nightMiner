@@ -141,7 +141,11 @@ class Core:
 
         # get off the pot when you're done shitting, por dios
         elif ship.position == me.shipyard.position and ship.halite_amount == 0:
-            return ship.move(seek_n_nav.StartUp.get_initial_minimum_distance(ship, me, game_map, turn))
+            c_queue_addition = ship.move(seek_n_nav.StartUp.get_initial_minimum_distance(ship, me, game_map, turn))
+            glo.Misc.log_w_shid('core', 'debug', ship.id, " - get_initial_minimum_distance() returning: " +
+                                str(c_queue_addition))
+
+            return c_queue_addition
 
         # not sure what happened just yet
         else:
@@ -178,7 +182,9 @@ class Core:
 
         for ship in me.get_ships():
             if glo.Variables.current_assignments[ship.id].primary_mission == glo.Missions.get_distance:
-                glo.Misc.loggit('scuttle', 'info', " - ship.id: " + str(ship.id) + " getting away from shipyard")
+                glo.Misc.loggit('scuttle', 'info', " - ship.id: " + str(ship.id) + " getting away from shipyard to " +
+                                glo.Variables.current_assignments[ship.id].destination)
+
                 c_queue.append(ship.move(game_map.naive_navigate(ship,
                                                                  glo.Variables.current_assignments[ship.id].
                                                                  destination)))
@@ -216,7 +222,6 @@ class Core:
                 #     c_queue.append(ship.move(Direction.North))
                 # else:
                 #     c_queue.append(ship.move(Direction.East))
-
 
             elif glo.Variables.current_assignments[ship.id].primary_mission != glo.Missions.scuttle:
                 glo.Misc.loggit('scuttle', 'info', " - ship.id: " + str(ship.id) + " heading back to drop")

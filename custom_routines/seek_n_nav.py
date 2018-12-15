@@ -180,6 +180,7 @@ class StartUp:
 
         :param ship:
         :param me:
+        :param game_map:
         :param turn:
         :return:
         """
