@@ -246,6 +246,66 @@ class Offense:
             return False
 
     @staticmethod
+    def init_early_blockade(me, game, turn):
+        """
+        Method assigns ships with the least amount of halite to individual
+        key routes into the enemy shipyards.
+
+        :param me:
+        :param game:
+        :param turn:
+        :return: cqueue_additions
+        """
+
+        sorted_ships = Offense.sort_ships_by_halite(me, True)
+        ship_cntr = 0
+
+        for playa in game.players:
+            for drop_route in playa.shipyard.position.get_surrounding_cardinals():
+                # assign a ship to each
+                # for now I think we'll just do this starting with the ships
+                # with the least halite
+                glo.Variables.drop_assignments[drop_route] = sorted_ships[ship_cntr]
+                ship_cntr += 1
+
+                glo.Variables.current_assignments[sorted_ships[ship_cntr].id].destination = drop_route
+                glo.Variables.current_assignments[sorted_ships[ship_cntr].id].primary_mission = \
+                    glo.Missions.early_blockade
+                glo.Variables.current_assignments[sorted_ships[ship_cntr].id].secondary_mission = \
+                    glo.Missions.in_transit
+                glo.Variables.current_assignments[sorted_ships[ship_cntr].id].turnstamp = turn
+
+
+    @staticmethod
+    def sort_ships_by_halite(me, least_to_highest):
+        """
+        This one will sort the ships we've got by the amount of halite that
+        they have on board, and return the list in that order.
+
+        :param me:
+        :param least_to_highest:
+        :return: sorted list
+        """
+
+        all_ships = me.get_ships()
+
+        for cntr in range(1, len(all_ships) - 2):   # this may not be the optimal for bubble sort
+            for cntr2 in range(1, len(all_ships) - 1):
+                if least_to_highest:
+                    if all_ships[cntr2].halite_amount > all_ships[cntr2 - 1].halite_amount:
+                        tmp_ship = all_ships[cntr2]
+                        all_ships[cntr2] = all_ships[cntr2 - 1]
+                        all_ships[cntr2 - 1] = tmp_ship
+
+                else:
+                    if all_ships[cntr2].halite_amount < all_ships[cntr2 - 1].halite_amount:
+                        tmp_ship = all_ships[cntr2]
+                        all_ships[cntr2] = all_ships[cntr2 - 1]
+                        all_ships[cntr2 - 1] = tmp_ship
+
+        return all_ships
+
+    @staticmethod
     def early_blockade(me, ship, game, game_map):
         """
         If we've got the ships to blockade at this point, we'll return the

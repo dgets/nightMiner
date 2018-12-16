@@ -54,6 +54,7 @@ class Variables:
 
     current_assignments = {}   # contains { id: ShipHistory }
     considered_destinations = []
+    drop_assignments = {}
 
 
 class Missions(Enum):
@@ -69,6 +70,7 @@ class Missions(Enum):
     busy = 7
     scuttle = 8
     blockade = 9
+    early_blockade = 10
 
 
 class Misc:
