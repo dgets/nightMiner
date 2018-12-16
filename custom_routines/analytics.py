@@ -224,7 +224,13 @@ class Offense:
         :return: Boolean
         """
 
-        if len(game.me.get_ships()) > ((len(game.players.values()) - 1) * 4):
+        glo.Misc.loggit('early_blockade', 'debug', "testing whether to enable early_blockade(): " +
+                        str(len(game.me.get_ships())) + " (?>) " + (((len(game.players.values()) - 1) * 4) +
+                                                                    glo.Const.Early_Blockade_Remainder_Ships))
+
+        if len(game.me.get_ships()) > (((len(game.players.values()) - 1) * 4) +
+                                       glo.Const.Early_Blockade_Remainder_Ships):
+            glo.Misc.loggit('early_blockade', 'info', "enabling early blockade")
             return True
         else:
             return False
@@ -240,6 +246,8 @@ class Offense:
         :param turn:
         :return:
         """
+
+        glo.Misc.loggit('early_blockade', 'debug', "initializing early_blockade() data")
 
         sorted_ships = Offense.sort_ships_by_halite(me, True)
         ship_cntr = 0
@@ -259,7 +267,7 @@ class Offense:
                     glo.Missions.in_transit
                 glo.Variables.current_assignments[sorted_ships[ship_cntr].id].turnstamp = turn
 
-        glo.Variables.early_blockade_enabled = True
+        glo.Variables.early_blockade_initialized = True
 
         return
 
@@ -271,21 +279,28 @@ class Offense:
         they have on board, and return the list in that order.
 
         :param me:
-        :param least_to_highest:
+        :param least_to_highest: Boolean
         :return: sorted list
         """
+
+        tmp_msg = " - sorting ships by halite "
+        if least_to_highest:
+            tmp_msg += "(descending)"
+        else:
+            tmp_msg += "(ascending)"
+        glo.Misc.loggit('misc_processing', 'info', tmp_msg)
 
         all_ships = me.get_ships()
 
         for cntr in range(1, len(all_ships) - 2):   # this may not be the optimal for bubble sort
             for cntr2 in range(1, len(all_ships) - 1):
-                if least_to_highest:
+                if least_to_highest:    # descending
                     if all_ships[cntr2].halite_amount > all_ships[cntr2 - 1].halite_amount:
                         tmp_ship = all_ships[cntr2]
                         all_ships[cntr2] = all_ships[cntr2 - 1]
                         all_ships[cntr2 - 1] = tmp_ship
 
-                else:
+                else:   # ascending
                     if all_ships[cntr2].halite_amount < all_ships[cntr2 - 1].halite_amount:
                         tmp_ship = all_ships[cntr2]
                         all_ships[cntr2] = all_ships[cntr2 - 1]
@@ -307,11 +322,22 @@ class Offense:
         :return: None or cqueue_addition
         """
 
-        if not Offense.can_we_early_blockade(game):
-            return None
+        # if not Offense.can_we_early_blockade(game):
+        #     return None
 
         if not glo.Variables.early_blockade_enabled:
             Offense.init_early_blockade(me, game, turn)
 
+        tmp_msg = " assigned early_blockade "
+
         if ship.position is not glo.Variables.current_assignments[ship.id].destination:
+            tmp_msg += "(en route to " + str(glo.Variables.current_assignments[ship.id].destination) + ")"
+            glo.Misc.log_w_shid('early_blockade', ship.id, 'info', tmp_msg)
+
             return seek_n_nav.Nav.scoot(ship, game_map)
+        else:
+            tmp_msg += "(chillin' at " + ship.position + ")"
+            glo.Misc.log_w_shid('early_blockade', ship.id, 'info', tmp_msg)
+
+            return ship.stay_still()
+

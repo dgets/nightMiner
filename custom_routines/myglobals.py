@@ -28,6 +28,8 @@ class Const:
         'pruning': False,
         'scuttle': True,
         'blockade': True,
+        'early_blockade': True,
+        'misc_processing': True,
     }
 
     FEATURES = {
@@ -45,6 +47,7 @@ class Const:
     # so that they can all get in to dropoff and get out of each others way,
     # so long as we're only dealing with the one shipyard & no dropoffs
     Enemy_Drops = []
+    Early_Blockade_Remainder_Ships = 4
 
 
 class Variables:
@@ -54,7 +57,8 @@ class Variables:
 
     current_assignments = {}   # contains { id: ShipHistory }
     considered_destinations = []
-    early_blockade_enabled = False
+    early_blockade_processing = False
+    early_blockade_initialized = False
     drop_assignments = {}
 
 

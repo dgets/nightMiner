@@ -58,11 +58,14 @@ while True:
             glo.Misc.log_w_shid('seek', 'debug', ship.id, "Present cell's halite: " +
                                 str(game_map[ship.position].halite_amount))
             try:
-                # let's see if we need to be doing an early blockade here
-                analytics.Offense.early_blockade(me, ship, game, game_map, turn)
-
                 # if this is a new ship, we'll be in the except, below
-                if glo.Variables.current_assignments[ship.id].primary_mission == glo.Missions.mining:
+                if glo.Variables.early_blockade_processing:
+                    glo.Misc.log_w_shid('core', 'info', ship.id, " entering early_blockade()")
+                    c_queue_addition = analytics.Offense.early_blockade(me, ship, game, game_map, turn)
+
+                    continue
+
+                elif glo.Variables.current_assignments[ship.id].primary_mission == glo.Missions.mining:
                     glo.Misc.loggit('core', 'debug', " - ship.id " + str(ship.id) +
                                     " in primary mining conditional")
                     c_queue_addition = core_processing.Core.primary_mission_mining(ship, game_map, me, turn)

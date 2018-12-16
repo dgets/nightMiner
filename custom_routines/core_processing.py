@@ -51,6 +51,9 @@ class Core:
 
         :param game:
         :param me:
+        :param ship:
+        :param game_map:
+        :param turn:
         :return:
         """
 
@@ -58,6 +61,10 @@ class Core:
         game.update_frame()
 
         glo.Misc.loggit('core', 'debug', " -* me.get_ships() dump: " + str(me.get_ships()))
+
+        # let's see if we need to be doing an early blockade here
+        if analytics.Offense.can_we_early_blockade(game):
+            glo.Variables.early_blockade_processing = True
 
     @staticmethod
     def primary_mission_mining(ship, game_map, me, turn):
