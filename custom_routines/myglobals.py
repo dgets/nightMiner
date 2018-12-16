@@ -54,6 +54,7 @@ class Variables:
 
     current_assignments = {}   # contains { id: ShipHistory }
     considered_destinations = []
+    early_blockade_enabled = False
     drop_assignments = {}
 
 

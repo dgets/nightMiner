@@ -13,7 +13,7 @@ time around.  ;)
 
 from hlt import constants
 
-from custom_routines import history, seek_n_nav, core_processing
+from custom_routines import history, seek_n_nav, core_processing, analytics
 from custom_routines import myglobals as glo
 
 # --==++** GAME BEGIN **++==--
@@ -46,7 +46,7 @@ while True:
     c_queue_addition = None
 
     glo.Misc.loggit('core', 'debug', " Making sure turn (" + str(turn) + " <= " +
-                          str(Max_Scuttle_Time - len(me.get_ships())) + ")")
+                    str(Max_Scuttle_Time - len(me.get_ships())) + ")")
 
     # if not turn > (500 - game_map.width - (len(me.get_ships()) * 2)):
     if not turn > (Max_Scuttle_Time - len(me.get_ships())):    # until glo issues are fixed
@@ -58,6 +58,9 @@ while True:
             glo.Misc.log_w_shid('seek', 'debug', ship.id, "Present cell's halite: " +
                                 str(game_map[ship.position].halite_amount))
             try:
+                # let's see if we need to be doing an early blockade here
+                analytics.Offense.early_blockade(me, ship, game, game_map, turn)
+
                 # if this is a new ship, we'll be in the except, below
                 if glo.Variables.current_assignments[ship.id].primary_mission == glo.Missions.mining:
                     glo.Misc.loggit('core', 'debug', " - ship.id " + str(ship.id) +
@@ -81,7 +84,7 @@ while True:
                         ship.halite_amount > 0:
                     # make the drop
                     glo.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " making drop @ " +
-                                          str(ship.position))
+                                    str(ship.position))
                     kill_from_history_queue.append(ship.id)
 
                     # now we've got to wipe that from the current_assignments
@@ -89,7 +92,7 @@ while True:
                     # around
                     if glo.Variables.current_assignments.pop(ship.id, None) is None:
                         glo.Misc.loggit('core', 'debug', " -* ship.id: " + str(ship.id) + " was found in an " +
-                                              "invalid state (no current_assignments entry)!")  # should throw exception
+                                        "invalid state (no current_assignments entry)!")  # should throw exception
 
                     continue
 
@@ -100,9 +103,9 @@ while True:
                     glo.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **mining** @ " +
                                     str(ship.position))
                     glo.Variables.current_assignments[ship.id] = history.ShipHistory(ship.id, ship.position,
-                                                                                           None, turn,
-                                                                                           glo.Missions.mining,
-                                                                                           glo.Missions.busy)
+                                                                                     None, turn,
+                                                                                     glo.Missions.mining,
+                                                                                     glo.Missions.busy)
                     command_queue.append(ship.stay_still())
                     continue
 
@@ -135,11 +138,6 @@ while True:
 
             glo.Misc.loggit('core', 'debug', " - found and processed ship: " + str(ship.id))
 
-        #glo.Misc.loggit('core', 'debug', "verifying that turn " + str(turn) + " <= " +
-        #                      str(constants.MAX_TURNS % 2) + " and halite " + str(me.halite_amount) + " >= " +
-        #                      str(glo.Const.Enough_Ore_To_Spawn))
-
-        #if turn <= (constants.MAX_TURNS % 2) and me.halite_amount >= glo.Const.Enough_Ore_To_Spawn \
         if turn <= 250 and me.halite_amount >= glo.Const.Enough_Ore_To_Spawn  \
                 and not game_map[me.shipyard].is_occupied:
             glo.Misc.loggit('core', 'debug', " - spawning ship")
@@ -155,12 +153,6 @@ while True:
         if new_kill_list_additions is not None:
             kill_from_history_queue += new_kill_list_additions
 
-    # elif ship.halite_amount < constants.MAX_HALITE - 100:
-    #     glo.Misc.loggit('core', 'debug', "Made scuttle drop; keeping busy until the end now")
-    #     # no collision detection, let's just see how this works for now
-    #     command_queue.append(ship.move(seek_n_nav.Nav.generate_profitable_offset(ship, game_map)))
-    #     # if this is too chaotic we can just head for (0, 0) or something for
-    #     # now...
     else:
         glo.Misc.loggit('core', 'debug', "Entered the scuttle race clause")
         # scuttle everybody home and avoid the clusterfsck

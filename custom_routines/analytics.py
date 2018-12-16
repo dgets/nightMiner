@@ -6,7 +6,7 @@ started 8nov18
 Class will hold different (dumb) analytic routines.
 """
 
-from hlt import Position, Direction, entity
+from hlt import Position, Direction
 
 from . import seek_n_nav
 from . import myglobals as glo
@@ -204,22 +204,6 @@ class Offense:
         # identify map data for Const storage and later retrieval
         glo.Misc.loggit('preprocessing', 'info', "Scanning for enemy shipyards")
 
-        # for x in range(0, game.game_map.width):
-        #     glo.Misc.loggit('preprocessing', 'debug', " - scanning column: " + str(x))
-        #     for y in range(0, game.game_map.height):
-        #         # check each map cell
-        #         glo.Misc.loggit('preprocessing', 'debug', "  - scanning cell: " + str(Position(x, y)))
-        #         if game.game_map[Position(x, y)].has_structure:
-        #             glo.Misc.loggit('preprocessing', 'debug', "  -* _HAS_ structure")
-        #
-        #         # NOTE: this only verifies that it's not our shipyard, as no drops would exist yet
-        #         if game.game_map[Position(x, y)].structure_type is not None and \
-        #                 game.me.shipyard.position != Position(x, y):
-        #             # there is a structure that is not ours
-        #             glo.Misc.loggit('preprocessing', 'debug', "Enemy shipyard at: " + str(Position(x, y)))
-        #
-        #             glo.Const.Enemy_Drops.append(Position(x, y))
-
         # this is a whole lot easier
         for player in game.players.values():
             if player is not game.me:
@@ -254,7 +238,7 @@ class Offense:
         :param me:
         :param game:
         :param turn:
-        :return: cqueue_additions
+        :return:
         """
 
         sorted_ships = Offense.sort_ships_by_halite(me, True)
@@ -274,6 +258,10 @@ class Offense:
                 glo.Variables.current_assignments[sorted_ships[ship_cntr].id].secondary_mission = \
                     glo.Missions.in_transit
                 glo.Variables.current_assignments[sorted_ships[ship_cntr].id].turnstamp = turn
+
+        glo.Variables.early_blockade_enabled = True
+
+        return
 
 
     @staticmethod
@@ -306,7 +294,7 @@ class Offense:
         return all_ships
 
     @staticmethod
-    def early_blockade(me, ship, game, game_map):
+    def early_blockade(me, ship, game, game_map, turn):
         """
         If we've got the ships to blockade at this point, we'll return the
         navigation command for this ship to take its rightful place.
@@ -315,6 +303,15 @@ class Offense:
         :param ship:
         :param game:
         :param game_map:
+        :param turn:
         :return: None or cqueue_addition
         """
 
+        if not Offense.can_we_early_blockade(game):
+            return None
+
+        if not glo.Variables.early_blockade_enabled:
+            Offense.init_early_blockade(me, game, turn)
+
+        if ship.position is not glo.Variables.current_assignments[ship.id].destination:
+            return seek_n_nav.Nav.scoot(ship, game_map)
