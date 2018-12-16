@@ -225,8 +225,8 @@ class Offense:
         """
 
         glo.Misc.loggit('early_blockade', 'debug', "testing whether to enable early_blockade(): " +
-                        str(len(game.me.get_ships())) + " (?>) " + (((len(game.players.values()) - 1) * 4) +
-                                                                    glo.Const.Early_Blockade_Remainder_Ships))
+                        str(len(game.me.get_ships())) + " (?>) " + str((((len(game.players.values()) - 1) * 4) +
+                                                                        glo.Const.Early_Blockade_Remainder_Ships)))
 
         if len(game.me.get_ships()) > (((len(game.players.values()) - 1) * 4) +
                                        glo.Const.Early_Blockade_Remainder_Ships):
