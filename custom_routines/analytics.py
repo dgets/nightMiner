@@ -193,6 +193,20 @@ class NavAssist:
             # position was not taken
             return dest_dir
 
+    @staticmethod
+    def are_we_blocking_our_shipyard(me):
+        """
+        Boolean return for whether or not we're over our own shipyard.
+
+        :param me:
+        :return: Boolean
+        """
+
+        for test_ship in me.get_ships():
+            if test_ship.position is me.shipyard.position:
+                return True
+
+        return False
 
 class Offense:
     """

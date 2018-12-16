@@ -83,12 +83,20 @@ class Nav:
         :return:
         """
         glo.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) +
-                              " **returning to shipyard** at " + str(me.shipyard.position))
+                        " **returning to shipyard** at " + str(me.shipyard.position))
 
         glo.Variables.current_assignments[ship.id].primary_mission = glo.Missions.dropoff
         glo.Variables.current_assignments[ship.id].secondary_mission = glo.Missions.in_transit
         glo.Variables.current_assignments[ship.id].destination = me.shipyard.position
         glo.Variables.current_assignments[ship.id].turnstamp = turn
+
+        if (ship.position in glo.Variables.current_assignments[ship.id].destination.get_surrounding_cardinals()) and \
+           game_map[glo.Variables.current_assignments[ship.id].destination].is_occupied and \
+           not analytics.NavAssist.are_we_blocking_our_shipyard(me):
+
+            # we should collide over the shipyard, as it's an opponent
+            # blocking our final hop
+            return ship.move(game_map._get_target_direction(ship.position, me.shipyard.position))
 
         return ship.move(game_map.naive_navigate(ship, glo.Variables.current_assignments[ship.id].destination))
 
@@ -168,6 +176,7 @@ class Offense:
         else:
             glo.Misc.log_w_shid('blockade', 'info', ship.id, " -* did not find enemy shipyard(s)")
 
+            # TODO: remove this when we work on the pringles
             return ship.move(game_map.naive_navigate(ship, Position(1, 1)))
 
 
