@@ -35,6 +35,7 @@ class Const:
     FEATURES = {
         'mining': True,
         'offense_blockade': True,
+        'early_blockade': False,
     }
 
     Enough_Ore_To_Spawn = 2000

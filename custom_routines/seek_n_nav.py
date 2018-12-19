@@ -9,34 +9,15 @@ location determination and navigation to it
 """
 
 
-import random
-
-from hlt import Direction, Position
+from hlt import Position
 
 from . import history, analytics
 from . import myglobals as glo
 
 
 class Nav:
-    # @staticmethod
-    # def generate_random_offset(current_position):
-    #     """
-    #     Generates a random position w/in glo.Const.Initial_Scoot_Distance
-    #     of current_location, and returns it for navigation to a new location
-    #     w/in that distance
-    #
-    #     TODO: Get collision detection here
-    #
-    #     :param current_position: Position
-    #     :return: new Position destination
-    #     """
-    #
-    #     x_offset = random.randint(-glo.Const.Initial_Scoot_Distance, glo.Const.Initial_Scoot_Distance)
-    #     y_offset = random.randint(-glo.Const.Initial_Scoot_Distance, glo.Const.Initial_Scoot_Distance)
-    #
-    #     return Position(current_position.x + x_offset, current_position.y + y_offset)
     @staticmethod
-    def generate_random_offset():
+    def generate_random_offset(ship, game_map):
         """
         Generates a random Direction
 
@@ -44,8 +25,11 @@ class Nav:
         :return: Direction
         """
 
-        # return Direction(random.randint(-1, 1), random.randint(-1, 1))
-        return random.choice([Direction.North, Direction.South, Direction.East, Direction.West])
+        tmp_dir = glo.Misc.r_dir_choice()
+        while game_map[ship.position.directional_offset(tmp_dir)].is_occupied:
+            tmp_dir = glo.Misc.r_dir_choice()
+
+        return tmp_dir
 
     @staticmethod
     def generate_profitable_offset(ship: object, game_map: object) -> object:
@@ -65,7 +49,7 @@ class Nav:
                             " from: analytics.HaliteAnalysis.find_best_dir()")
             return new_dir
         else:
-            new_dir = Nav.generate_random_offset(ship.position)
+            new_dir = Nav.generate_random_offset(ship, game_map)
             glo.Misc.loggit('core', 'debug', " -* generate_profitable_offset() returning: " + str(new_dir) +
                             " from:  Nav.generate_random_offset()")
             return new_dir
@@ -98,6 +82,10 @@ class Nav:
             # blocking our final hop
             return ship.move(game_map._get_target_direction(ship.position, me.shipyard.position))
 
+        if game_map[ship.position.directional_offset(game_map._get_target_direction(ship.position,
+                                                                                    me.shipyard.position))].is_occupied:
+            return ship.move(Nav.generate_profitable_offset(ship, game_map))
+
         return ship.move(game_map.naive_navigate(ship, glo.Variables.current_assignments[ship.id].destination))
 
     @staticmethod
@@ -106,11 +94,14 @@ class Nav:
         Moves into the cell in the direction given, if not occupied, or else
         waits for a turn in order to avoid collision
 
+        TODO: see if this is ready for complete deprecation and then remove
+
         :param ship:
         :param direction:
         :param game_map:
         :return:
         """
+
         next_dir = analytics.NavAssist.avoid_collision_by_random_scoot(direction, ship)
         if next_dir is not None:
             next_dest = game_map[ship.position.directional_offset(direction)]
@@ -120,7 +111,10 @@ class Nav:
             # I guess we'll just wait for now
             glo.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " avoiding collision at " +
                             str(ship.position))
-            return ship.stay_still()
+            # no, we're gonna try to not use stay_still() any more
+            # return ship.stay_still()
+
+            return ship.move(Nav.generate_profitable_offset(ship, game_map))
 
     @staticmethod
     def scoot(ship, game_map):
@@ -135,11 +129,20 @@ class Nav:
         glo.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **scooting** to " +
                         str(glo.Variables.current_assignments[ship.id].destination))
 
+        glo.Misc.loggit('core', 'debug', " -* destination: " +
+                        str(glo.Variables.current_assignments[ship.id].destination))
+        glo.Misc.loggit('core', 'debug', " -* target's direction: " +
+                        str(game_map._get_target_direction(ship.position,
+                                                           glo.Variables.current_assignments[ship.id].destination)))
+
+        if game_map[ship.position.directional_offset(game_map._get_target_direction(ship.position,
+                                                                                    glo.Variables.
+                                                                                    current_assignments[ship.id].
+                                                                                    destination))].is_occupied:
+            return ship.move(Nav.generate_profitable_offset(ship, game_map))
+
         return ship.move(game_map.naive_navigate(ship,
                                                  glo.Variables.current_assignments[ship.id].destination))
-        # return Nav.less_dumb_move(ship, game_map.naive_navigate(ship,
-        #                                                         glo.Variables.current_assignments[ship.id].
-        #                                                         destination), game_map)
 
 
 class Offense:
@@ -171,6 +174,7 @@ class Offense:
                 dist = game_map.calculate_distance(ship.position, enemy_syard_pos)
                 target_syard_pos = enemy_syard_pos
 
+        # TODO: determine whether we need to implement random moving collision avoidance
         if target_syard_pos is not None:
             return ship.move(game_map.naive_navigate(ship, target_syard_pos))
         else:

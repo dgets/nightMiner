@@ -116,7 +116,7 @@ class HaliteAnalysis:
         :return: Direction
         """
         halite_best = 0
-        best_dir = seek_n_nav.Nav.generate_random_offset()
+        best_dir = seek_n_nav.Nav.generate_random_offset(ship, game_map)
 
         glo.Misc.log_w_shid('seek', 'info', ship.id, "Entered analytics.HaliteAnalysis.find_best_dir()")
 
