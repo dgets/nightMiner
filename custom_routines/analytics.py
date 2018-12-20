@@ -322,36 +322,4 @@ class Offense:
 
         return all_ships
 
-    @staticmethod
-    def early_blockade(me, ship, game, game_map, turn):
-        """
-        If we've got the ships to blockade at this point, we'll return the
-        navigation command for this ship to take its rightful place.
-
-        :param me:
-        :param ship:
-        :param game:
-        :param game_map:
-        :param turn:
-        :return: None or cqueue_addition
-        """
-
-        # if not Offense.can_we_early_blockade(game):
-        #     return None
-
-        if not glo.Variables.early_blockade_enabled:
-            Offense.init_early_blockade(me, game, turn)
-
-        tmp_msg = " assigned early_blockade "
-
-        if ship.position is not glo.Variables.current_assignments[ship.id].destination:
-            tmp_msg += "(en route to " + str(glo.Variables.current_assignments[ship.id].destination) + ")"
-            glo.Misc.log_w_shid('early_blockade', ship.id, 'info', tmp_msg)
-
-            return seek_n_nav.Nav.scoot(ship, game_map)
-        else:
-            tmp_msg += "(chillin' at " + ship.position + ")"
-            glo.Misc.log_w_shid('early_blockade', ship.id, 'info', tmp_msg)
-
-            return ship.stay_still()
 

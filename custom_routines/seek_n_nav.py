@@ -129,6 +129,7 @@ class Nav:
         glo.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **scooting** to " +
                         str(glo.Variables.current_assignments[ship.id].destination))
 
+        glo.Misc.loggit('core', 'debug', " -* ship's current position: " + str(ship.position))
         glo.Misc.loggit('core', 'debug', " -* destination: " +
                         str(glo.Variables.current_assignments[ship.id].destination))
         glo.Misc.loggit('core', 'debug', " -* target's direction: " +
@@ -182,6 +183,39 @@ class Offense:
 
             # TODO: remove this when we work on the pringles
             return ship.move(game_map.naive_navigate(ship, Position(1, 1)))
+
+    @staticmethod
+    def early_blockade(me, ship, game, game_map, turn):
+        """
+        If we've got the ships to blockade at this point, we'll return the
+        navigation command for this ship to take its rightful place.
+
+        :param me:
+        :param ship:
+        :param game:
+        :param game_map:
+        :param turn:
+        :return: None or cqueue_addition
+        """
+
+        # if not Offense.can_we_early_blockade(game):
+        #     return None
+
+        if not glo.Variables.early_blockade_enabled:
+            analytics.Offense.init_early_blockade(me, game, turn)
+
+        tmp_msg = " assigned early_blockade "
+
+        if ship.position is not glo.Variables.current_assignments[ship.id].destination:
+            tmp_msg += "(en route to " + str(glo.Variables.current_assignments[ship.id].destination) + ")"
+            glo.Misc.log_w_shid('early_blockade', ship.id, 'info', tmp_msg)
+
+            return Nav.scoot(ship, game_map)
+        else:
+            tmp_msg += "(chillin' at " + ship.position + ")"
+            glo.Misc.log_w_shid('early_blockade', ship.id, 'info', tmp_msg)
+
+            return ship.stay_still()
 
 
 class StartUp:
