@@ -274,6 +274,9 @@ class Offense:
                 glo.Variables.drop_assignments[drop_route] = sorted_ships[ship_cntr]
                 ship_cntr += 1
 
+                glo.Misc.log_w_shid('early_blockade', 'debug', sorted_ships[ship_cntr].id,
+                                    " - setting destination to :" + str(drop_route))
+
                 glo.Variables.current_assignments[sorted_ships[ship_cntr].id].destination = drop_route
                 glo.Variables.current_assignments[sorted_ships[ship_cntr].id].primary_mission = \
                     glo.Missions.early_blockade

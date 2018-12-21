@@ -81,28 +81,6 @@ class Core:
         :return: command_queue addition
         """
 
-        # normalize destination if not already handled
-
-        # if glo.Variables.current_assignments[ship.id].destination is not None \
-        #         and not seek_n_nav.Misc.is_position_normalized(glo.Variables.current_assignments[ship.id].destination,
-        #                                                        game_map):
-        #     glo.Misc.loggit('core', 'debug', " -* destination holds: " +
-        #                     str(glo.Variables.current_assignments[ship.id].destination))
-        #
-        #     glo.Variables.current_assignments[ship.id].destination = game_map.normalize(
-        #         glo.Variables.current_assignments[ship.id].destination
-        #     )
-
-        # NOTE: if the destination WAS normalized (as should usually be the case), this following clause will
-        # result in wandering; could this be the bug that we were looking for?
-        # else:
-        #     glo.Variables.current_assignments[ship.id].destination = \
-        #         ship.position.directional_offset(seek_n_nav.Nav.generate_profitable_offset(ship, game_map))
-
-        # glo.Misc.log_w_shid('core', 'debug', ship.id, "ShipHistory-> " + \
-        #                     str(glo.Variables.current_assignments[ship.id]) + " ship's position: " + \
-        #                     str(ship.position))
-
         # we've mined all of the halite, bounce a random square
         if ship.halite_amount < constants.MAX_HALITE and \
                 glo.Variables.current_assignments[ship.id].primary_mission == glo.Missions.mining and \
@@ -118,9 +96,6 @@ class Core:
                 game_map[ship.position].halite_amount > 0 and ship.halite_amount < constants.MAX_HALITE:
 
             return mining.Mine.done_with_transit_now_mine(ship, turn)
-        # elif glo.Variables.current_assignments[ship.id].secondary_mission == glo.Missions.in_transit or \
-        #         glo.Variables.current_assignments[ship.id].secondary_mission == glo.Missions.busy:
-        #     return mining.Mine.done_with_transit_now_mine(ship, turn)
 
         # transit back to the shipyard
         elif ship.halite_amount >= 900 and ship.position != me.shipyard.position:
