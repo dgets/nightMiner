@@ -233,7 +233,22 @@ class Offense:
 
                 glo.Const.Enemy_Drops.append(player.shipyard.position)
 
+        # 4 ships per shipyard; this is an expensive maneuver; probably only
+        # viable in 2 player games
+        tot_cntr = 0
+        for blockade_ship in game.me.get_ships():
+            # we're just doing first come first serve right now; later on we'll
+            # want to make sure that we're not 'spending' ships that are too
+            # far away or too full of halite prior to a drop
+            for pathway_dir in Direction.get_all_cardinals():    # four ships per drop
+                glo.Misc.set_n_log_new_dest(blockade_ship,
+                                            glo.Const.Enemy_Drops[tot_cntr].get_directional_offset(pathway_dir))
+                glo.Variables.current_assignments[blockade_ship.id].primary_mission = glo.Missions.early_blockade
+                glo.Variables.current_assignments[blockade_ship.id].secondary_mission = glo.Missions.in_transit
 
+            tot_cntr += 1
+
+        glo.Variables.early_blockade_initialized = True
 
         return
 

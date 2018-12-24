@@ -82,8 +82,12 @@ class Nav:
             # blocking our final hop
             return ship.move(game_map._get_target_direction(ship.position, me.shipyard.position))
 
-        if game_map[ship.position.directional_offset(game_map._get_target_direction(ship.position,
-                                                                                    me.shipyard.position))].is_occupied:
+        target_dir = Misc.is_direction_normalized(game_map, ship)
+        if target_dir is None:
+            # again, not sure why I'm here, but let's process for it
+            return ship.stay_still()
+
+        if game_map[ship.position.directional_offset(target_dir)].is_occupied:
             return ship.move(Nav.generate_profitable_offset(ship, game_map))
 
         return ship.move(game_map.naive_navigate(ship, glo.Variables.current_assignments[ship.id].destination))
@@ -132,14 +136,14 @@ class Nav:
         glo.Misc.loggit('core', 'debug', " -* ship's current position: " + str(ship.position))
         # glo.Misc.loggit('core', 'debug', " -* destination: " +    # this is covered above in the 'scoot' log stmt
         #                str(glo.Variables.current_assignments[ship.id].destination))
-        glo.Misc.loggit('core', 'debug', " -* target's direction: " +
-                        str(game_map._get_target_direction(ship.position,
-                                                           glo.Variables.current_assignments[ship.id].destination)))
 
-        if game_map[ship.position.directional_offset(game_map._get_target_direction(ship.position,
-                                                                                    glo.Variables.
-                                                                                    current_assignments[ship.id].
-                                                                                    destination))].is_occupied:
+        target_dir = Misc.is_direction_normalized(game_map, ship)
+        if target_dir is None:
+            return ship.stay_still()
+
+        glo.Misc.loggit('core', 'debug', " -** processed results from _get_target_direction() to " + str(target_dir))
+
+        if game_map[ship.position.directional_offset(target_dir)].is_occupied:
             return ship.move(Nav.generate_profitable_offset(ship, game_map))
 
         return ship.move(game_map.naive_navigate(ship,
@@ -198,7 +202,7 @@ class Offense:
         :return: None or cqueue_addition
         """
 
-        if not glo.Variables.early_blockade_enabled:
+        if not glo.Variables.early_blockade_initialized:
             analytics.Offense.init_early_blockade(me, game, turn)
 
         tmp_msg = " assigned early_blockade "
@@ -279,3 +283,31 @@ class Misc:
             return False
         else:
             return True
+
+    @staticmethod
+    def is_direction_normalized(game_map, ship):
+        """
+        Takes the results of game_map._get_target_direction() and cleans the
+        Nones out of it.  Assumes that the valid destination is packed into
+        current_assignments[ship.id].destination
+
+        :param game_map:
+        :param ship:
+        :return: sanitized direction or None to flag for stay_still()
+        """
+
+        tmp_direction = game_map._get_target_direction(ship.position,
+                                                       glo.Variables.current_assignments[ship.id].destination)
+
+        glo.Misc.loggit('core', 'debug', " -* target's direction: " + str(tmp_direction))
+
+        glo.Misc.loggit('core', 'debug', " -** trying bogus tuple fix")
+        (trash1, trash2) = tmp_direction
+
+        if trash1 is None and trash2 is None:
+            # not sure why we're here, but we definitely want to stay
+            return None
+        elif trash1 is None:
+            return trash2
+        else:
+            return trash1
