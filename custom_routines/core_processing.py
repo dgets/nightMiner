@@ -39,7 +39,8 @@ class Core:
 
         glo.Misc.loggit('any', 'info', "Hatched and swimming! Player ID is {}.".format(game.my_id))
 
-        analytics.Offense.scan_for_enemy_shipyards(game)
+        if glo.Const.FEATURES['blockade'] or glo.Const.FEATURES['early_blockade']:
+            analytics.Offense.scan_for_enemy_shipyards(game)
 
         return game
 

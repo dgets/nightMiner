@@ -130,8 +130,8 @@ class Nav:
                         str(glo.Variables.current_assignments[ship.id].destination))
 
         glo.Misc.loggit('core', 'debug', " -* ship's current position: " + str(ship.position))
-        glo.Misc.loggit('core', 'debug', " -* destination: " +
-                        str(glo.Variables.current_assignments[ship.id].destination))
+        # glo.Misc.loggit('core', 'debug', " -* destination: " +    # this is covered above in the 'scoot' log stmt
+        #                str(glo.Variables.current_assignments[ship.id].destination))
         glo.Misc.loggit('core', 'debug', " -* target's direction: " +
                         str(game_map._get_target_direction(ship.position,
                                                            glo.Variables.current_assignments[ship.id].destination)))
@@ -197,9 +197,6 @@ class Offense:
         :param turn:
         :return: None or cqueue_addition
         """
-
-        # if not Offense.can_we_early_blockade(game):
-        #     return None
 
         if not glo.Variables.early_blockade_enabled:
             analytics.Offense.init_early_blockade(me, game, turn)

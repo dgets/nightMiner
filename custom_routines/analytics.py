@@ -215,6 +215,13 @@ class Offense:
 
     @staticmethod
     def scan_for_enemy_shipyards(game):
+        """
+        Method iterates through the enemy shipyards, determining also what ship
+        is assigned each shipyard to help blockade
+
+        :param game:
+        :return:
+        """
         # identify map data for Const storage and later retrieval
         glo.Misc.loggit('preprocessing', 'info', "Scanning for enemy shipyards")
 
@@ -225,6 +232,8 @@ class Offense:
                                 str(player.shipyard) + " belonging to player: " + str(player.id))
 
                 glo.Const.Enemy_Drops.append(player.shipyard.position)
+
+
 
         return
 

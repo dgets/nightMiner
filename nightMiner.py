@@ -45,11 +45,13 @@ while True:
     # clear up other potential crap
     c_queue_addition = None
 
-    glo.Misc.loggit('core', 'debug', " Making sure turn (" + str(turn) + " <= " +
-                    str(Max_Scuttle_Time - len(me.get_ships())) + ")")
+    if glo.Const.FEATURES['scuttle']:
+        glo.Misc.loggit('core', 'debug', " Making sure turn (" + str(turn) + " <= " +
+                        str(Max_Scuttle_Time - len(me.get_ships())) + ")")
 
     # if not turn > (500 - game_map.width - (len(me.get_ships()) * 2)):
-    if not turn > (Max_Scuttle_Time - len(me.get_ships())):    # until glo issues are fixed
+    if not glo.Const.FEATURES['scuttle'] or not turn > (Max_Scuttle_Time - len(me.get_ships())):
+        # until glo issues are fixed
         # we're not in the scuttle time crunch yet
         for ship in me.get_ships():
             kill_from_history_queue = []
@@ -57,6 +59,7 @@ while True:
             glo.Misc.loggit('core', 'info', " - processing ship.id: " + str(ship.id))
             glo.Misc.log_w_shid('seek', 'debug', ship.id, "Present cell's halite: " +
                                 str(game_map[ship.position].halite_amount))
+
             try:
                 if glo.Const.FEATURES['early_blockade']:
                     # if this is a new ship, we'll be in the except, below

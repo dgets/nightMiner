@@ -18,6 +18,7 @@ class Const:
     """
     global constants
     """
+
     DEBUGGING = {
         'preprocessing': True,
         'core': True,
@@ -67,6 +68,7 @@ class Missions(Enum):
     """
     global mission assignment categories
     """
+
     in_transit = 1
     mining = 2
     dropoff = 3
@@ -77,6 +79,7 @@ class Missions(Enum):
     scuttle = 8
     blockade = 9
     early_blockade = 10
+    misc = 11   # for use when multiple missions apply
 
 
 class Misc:
@@ -108,6 +111,18 @@ class Misc:
 
     @staticmethod
     def log_w_shid(debugging_type, log_level, id, log_message):
+        """
+        Sends a message to the log with some critical logging information taken
+        care of by the method, instead of having to throw everything into the
+        log file manually
+
+        :param debugging_type:
+        :param log_level:
+        :param id:
+        :param log_message:
+        :return:
+        """
+
         if debugging_type == 'any' or Const.DEBUGGING[debugging_type]:
             if log_level == 'debug' or log_level == 'any':
                 logging.debug(" - ship.id: " + str(id) + " " + log_message)
@@ -115,6 +130,23 @@ class Misc:
                 logging.info(" - ship.id: " + str(id) + " " + log_message)
             else:
                 raise RuntimeError("Log level specified is not implemented in myglobals.Misc.log_w_shid()")
+
+    @staticmethod
+    def set_n_log_new_dest(ship, destination):
+        """
+        Logs the value that the destination is being changed to, then changes
+        the current_assignments[id].destination value accordingly
+
+        :param ship:
+        :param destination:
+        :return:
+        """
+
+        Misc.log_w_shid('misc', 'debug', ship.id, " is now setting *destination* to " + str(destination))
+
+        Variables.current_assignments[ship.id].destination = destination
+
+        return
 
     @staticmethod
     def r_dir_choice():
@@ -138,6 +170,7 @@ class Misc:
         :param ship:
         :return:
         """
+
         Variables.considered_destinations.append(ship.position.directional_offset(direction))
 
         return
