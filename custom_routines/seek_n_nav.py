@@ -80,7 +80,14 @@ class Nav:
 
             # we should collide over the shipyard, as it's an opponent
             # blocking our final hop
-            return ship.move(game_map._get_target_direction(ship.position, me.shipyard.position))
+            new_direction = Misc.is_direction_normalized(game_map, ship)
+            if new_direction is None:
+                return ship.stay_still()
+
+            glo.Misc.log_w_shid('mining', 'debug', ship.id, " moving to destination " +
+                                glo.Variables.current_assignments[ship.id].destination)
+
+            return ship.move(new_direction)
 
         target_dir = Misc.is_direction_normalized(game_map, ship)
         if target_dir is None:
@@ -209,7 +216,7 @@ class Offense:
 
         if ship.position is not glo.Variables.current_assignments[ship.id].destination:
             tmp_msg += "(en route to " + str(glo.Variables.current_assignments[ship.id].destination) + ")"
-            glo.Misc.log_w_shid('early_blockade', ship.id, 'info', tmp_msg)
+            glo.Misc.log_w_shid('early_blockade', 'info', ship.id, tmp_msg)
 
             return Nav.scoot(ship, game_map)
         else:
