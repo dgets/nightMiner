@@ -277,7 +277,8 @@ class Offense:
     def init_early_blockade(me, game, turn):
         """
         Method assigns ships with the least amount of halite to individual
-        key routes into the enemy shipyards.
+        key routes into the enemy shipyards.  This sets each particular
+        destination.
 
         :param me:
         :param game:
@@ -287,16 +288,17 @@ class Offense:
 
         glo.Misc.loggit('early_blockade', 'debug', "initializing early_blockade() data")
 
+        sorted_ships = []
         sorted_ships = Offense.sort_ships_by_halite(me, True)
         ship_cntr = 0
 
         for playa in game.players:
-            for drop_route in playa.shipyard.position.get_surrounding_cardinals():
+            for drop_route in game.players[playa].shipyard.position.get_surrounding_cardinals():
                 # assign a ship to each
                 # for now I think we'll just do this starting with the ships
                 # with the least halite
-                glo.Variables.drop_assignments[drop_route] = sorted_ships[ship_cntr]
-                ship_cntr += 1
+
+                # glo.Variables.drop_assignments[drop_route] = sorted_ships[ship_cntr]
 
                 glo.Misc.log_w_shid('early_blockade', 'debug', sorted_ships[ship_cntr].id,
                                     " - setting destination to :" + str(drop_route))
@@ -307,6 +309,8 @@ class Offense:
                 glo.Variables.current_assignments[sorted_ships[ship_cntr].id].secondary_mission = \
                     glo.Missions.in_transit
                 glo.Variables.current_assignments[sorted_ships[ship_cntr].id].turnstamp = turn
+
+                ship_cntr += 1
 
         glo.Variables.early_blockade_initialized = True
 

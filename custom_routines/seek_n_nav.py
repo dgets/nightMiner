@@ -85,7 +85,7 @@ class Nav:
                 return ship.stay_still()
 
             glo.Misc.log_w_shid('mining', 'debug', ship.id, " moving to destination " +
-                                glo.Variables.current_assignments[ship.id].destination)
+                                str(glo.Variables.current_assignments[ship.id].destination))
 
             return ship.move(new_direction)
 
@@ -210,7 +210,8 @@ class Offense:
         """
 
         if not glo.Variables.early_blockade_initialized:
-            analytics.Offense.init_early_blockade(me, game, turn)
+            # analytics.Offense.init_early_blockade(me, game, turn)
+            raise RuntimeError("early_blockade() not properly set up")
 
         tmp_msg = " assigned early_blockade "
 

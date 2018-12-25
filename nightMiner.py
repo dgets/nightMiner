@@ -34,7 +34,7 @@ while True:
     me = game.me  # keeps things speedier
 
     # costly preprocessing time
-    core_processing.Core.per_turn_preprocessing(game, me)
+    core_processing.Core.per_turn_preprocessing(game, me, turn)
 
     # initialize per-turn queues
     command_queue = []
@@ -63,7 +63,8 @@ while True:
             try:
                 if glo.Const.FEATURES['early_blockade']:
                     # if this is a new ship, we'll be in the except, below
-                    if glo.Variables.early_blockade_processing:
+                    if glo.Variables.early_blockade_processing and \
+                            glo.Variables.current_assignments[ship.id].primary_mission == glo.Missions.early_blockade:
                         glo.Misc.log_w_shid('core', 'info', ship.id, " entering early_blockade()")
                         c_queue_addition = seek_n_nav.Offense.early_blockade(me, ship, game, game_map, turn)
 
