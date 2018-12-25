@@ -39,18 +39,22 @@ class Core:
 
         glo.Misc.loggit('any', 'info', "Hatched and swimming! Player ID is {}.".format(game.my_id))
 
-        analytics.Offense.scan_for_enemy_shipyards(game)
+        if glo.Const.FEATURES['blockade'] or glo.Const.FEATURES['early_blockade']:
+            analytics.Offense.scan_for_enemy_shipyards(game)
 
         return game
 
     @staticmethod
-    def per_turn_preprocessing(game, me):
+    def per_turn_preprocessing(game, me, turn):
         """
         Computationally expensive and/or other preprocessing taken care of at
         the start of each turn in the primary game loop.
 
         :param game:
         :param me:
+        :param ship:
+        :param game_map:
+        :param turn:
         :return:
         """
 
@@ -58,6 +62,12 @@ class Core:
         game.update_frame()
 
         glo.Misc.loggit('core', 'debug', " -* me.get_ships() dump: " + str(me.get_ships()))
+
+        if glo.Const.FEATURES['early_blockade'] and not glo.Variables.early_blockade_processing:
+            # let's see if we need to be doing an early blockade here
+            if analytics.Offense.can_we_early_blockade(game):
+                glo.Variables.early_blockade_processing = True
+                analytics.Offense.init_early_blockade(me, game, turn)
 
     @staticmethod
     def primary_mission_mining(ship, game_map, me, turn):

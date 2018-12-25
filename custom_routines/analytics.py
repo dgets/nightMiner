@@ -6,7 +6,7 @@ started 8nov18
 Class will hold different (dumb) analytic routines.
 """
 
-from hlt import Position, Direction, entity
+from hlt import Position, Direction
 
 from . import seek_n_nav
 from . import myglobals as glo
@@ -156,7 +156,7 @@ class HaliteAnalysis:
         """
 
         halite_best = 0
-        best_dir = seek_n_nav.Nav.generate_random_offset()
+        best_dir = seek_n_nav.Nav.generate_random_offset(ship, game_map)
 
         glo.Misc.log_w_shid('seek', 'info', ship.id, "Entered analytics.HaliteAnalysis.find_best_dir()")
 
@@ -236,26 +236,19 @@ class NavAssist:
             return dest_dir
 
     @staticmethod
-    def avoid_if_ship_blocking(game_map, ship):
+    def are_we_blocking_our_shipyard(me):
         """
-        If there is a ship blocking the way, this routine will mark the cell as
-        unsafe, in order to avoid pawn formations in routines that are
-        utilizing .naive_navigate() without other fallbacks.
+        Boolean return for whether or not we're over our own shipyard.
 
-        :param game_map:
-        :param ship:
-        :return:
+        :param me:
+        :return: Boolean
         """
 
-        # if game_map[ship.position.directional_offset(
-        #         game_map._get_target_direction(ship.position,
-        #                                        glo.Variables.current_assignments[ship.id].destination))].is_occupied:
-        for test_dir in game_map[ship.position].position.get_surrounding_cardinals():
-            if game_map[test_dir].is_occupied:
-                game_map[test_dir].mark_unsafe(ship)
+        for test_ship in me.get_ships():
+            if test_ship.position is me.shipyard.position:
+                return True
 
-        return
-
+        return False
 
 class Offense:
     """
@@ -264,6 +257,13 @@ class Offense:
 
     @staticmethod
     def scan_for_enemy_shipyards(game):
+        """
+        Method iterates through the enemy shipyards, determining also what ship
+        is assigned each shipyard to help blockade
+
+        :param game:
+        :return:
+        """
         # identify map data for Const storage and later retrieval
         glo.Misc.loggit('preprocessing', 'info', "Scanning for enemy shipyards")
 
@@ -272,8 +272,130 @@ class Offense:
             if player is not game.me:
                 glo.Misc.loggit('preprocessing', 'debug', " - found shipyard @ " +
                                 str(player.shipyard) + " belonging to player: " + str(player.id))
+
                 glo.Const.Enemy_Drops.append(player.shipyard.position)
 
-        glo.Misc.loggit('preprocessing', 'info', " - found " + str(len(game.players)) + " total players")
+        # 4 ships per shipyard; this is an expensive maneuver; probably only
+        # viable in 2 player games
+        tot_cntr = 0
+        for blockade_ship in game.me.get_ships():
+            # we're just doing first come first serve right now; later on we'll
+            # want to make sure that we're not 'spending' ships that are too
+            # far away or too full of halite prior to a drop
+            for pathway_dir in Direction.get_all_cardinals():    # four ships per drop
+                glo.Misc.set_n_log_new_dest(blockade_ship,
+                                            glo.Const.Enemy_Drops[tot_cntr].get_directional_offset(pathway_dir))
+                glo.Variables.current_assignments[blockade_ship.id].primary_mission = glo.Missions.early_blockade
+                glo.Variables.current_assignments[blockade_ship.id].secondary_mission = glo.Missions.in_transit
+
+            tot_cntr += 1
+
+        glo.Variables.early_blockade_initialized = True
 
         return
+
+    @staticmethod
+    def can_we_early_blockade(game):
+        """
+        Method returns true if we can spare enough ships to continue mining
+        while blockading the enemy shipyards, false if otherwise.
+
+        :param game:
+        :return: Boolean
+        """
+
+        glo.Misc.loggit('early_blockade', 'debug', "testing whether to enable early_blockade(): " +
+                        str(len(game.me.get_ships())) + " (?>) " + str((((len(game.players.values()) - 1) * 4) +
+                                                                        glo.Const.Early_Blockade_Remainder_Ships)))
+
+        if len(game.me.get_ships()) > (((len(game.players.values()) - 1) * 4) +
+                                       glo.Const.Early_Blockade_Remainder_Ships):
+            glo.Misc.loggit('early_blockade', 'info', "enabling early blockade")
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def init_early_blockade(me, game, turn):
+        """
+        Method assigns ships with the least amount of halite to individual
+        key routes into the enemy shipyards.  This sets each particular
+        destination.
+
+        :param me:
+        :param game:
+        :param turn:
+        :return:
+        """
+
+        glo.Misc.loggit('early_blockade', 'debug', "initializing early_blockade() data")
+
+        sorted_ships = []
+        sorted_ships = Offense.sort_ships_by_halite(me, True)
+        ship_cntr = 0
+
+        for playa in game.players:
+            if playa == me.id:
+                continue
+
+            for drop_route in game.players[playa].shipyard.position.get_surrounding_cardinals():
+                # assign a ship to each
+                # for now I think we'll just do this starting with the ships
+                # with the least halite
+
+                # glo.Variables.drop_assignments[drop_route] = sorted_ships[ship_cntr]
+
+                glo.Misc.log_w_shid('early_blockade', 'debug', sorted_ships[ship_cntr].id,
+                                    " - setting destination to :" + str(drop_route))
+
+                glo.Variables.current_assignments[sorted_ships[ship_cntr].id].destination = drop_route
+                glo.Variables.current_assignments[sorted_ships[ship_cntr].id].primary_mission = \
+                    glo.Missions.early_blockade
+                glo.Variables.current_assignments[sorted_ships[ship_cntr].id].secondary_mission = \
+                    glo.Missions.in_transit
+                glo.Variables.current_assignments[sorted_ships[ship_cntr].id].turnstamp = turn
+
+                ship_cntr += 1
+
+        glo.Variables.early_blockade_initialized = True
+
+        return
+
+
+    @staticmethod
+    def sort_ships_by_halite(me, least_to_highest):
+        """
+        This one will sort the ships we've got by the amount of halite that
+        they have on board, and return the list in that order.
+
+        :param me:
+        :param least_to_highest: Boolean
+        :return: sorted list
+        """
+
+        tmp_msg = " - sorting ships by halite "
+        if least_to_highest:
+            tmp_msg += "(descending)"
+        else:
+            tmp_msg += "(ascending)"
+        glo.Misc.loggit('misc_processing', 'info', tmp_msg)
+
+        all_ships = me.get_ships()
+
+        for cntr in range(1, len(all_ships) - 2):   # this may not be the optimal for bubble sort
+            for cntr2 in range(1, len(all_ships) - 1):
+                if least_to_highest:    # descending
+                    if all_ships[cntr2].halite_amount > all_ships[cntr2 - 1].halite_amount:
+                        tmp_ship = all_ships[cntr2]
+                        all_ships[cntr2] = all_ships[cntr2 - 1]
+                        all_ships[cntr2 - 1] = tmp_ship
+
+                else:   # ascending
+                    if all_ships[cntr2].halite_amount < all_ships[cntr2 - 1].halite_amount:
+                        tmp_ship = all_ships[cntr2]
+                        all_ships[cntr2] = all_ships[cntr2 - 1]
+                        all_ships[cntr2 - 1] = tmp_ship
+
+        return all_ships
+
+

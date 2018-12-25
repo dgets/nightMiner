@@ -29,11 +29,16 @@ class Const:
         'pruning': False,
         'scuttle': True,
         'blockade': True,
+        'early_blockade': True,
+        'misc_processing': True,
     }
 
     FEATURES = {
         'mining': True,
+        'blockade': True,
         'offense_blockade': True,
+        'scuttle': True,
+        'early_blockade': True,
     }
 
     Enough_Ore_To_Spawn = 2000
@@ -42,6 +47,7 @@ class Const:
     Max_Chunk_Height = Initial_Scoot_Distance
     # Max_Scuttle_Time = constants.MAX_TURNS - (Game.game_map.width * 2)
     Enemy_Drops = []
+    Early_Blockade_Remainder_Ships = 4
 
 
 class Variables:
@@ -51,8 +57,11 @@ class Variables:
     TODO: add barred_destinations consideration in order to prevent pawn forms
     """
 
-    current_assignments = {}    # contains { id: ShipHistory }
-    barred_destinations = []    # note that this is not fully implemented yet
+    current_assignments = {}   # contains { id: ShipHistory }
+    considered_destinations = []
+    early_blockade_processing = False
+    early_blockade_initialized = False
+    drop_assignments = {}
 
 
 class Missions(Enum):
@@ -69,6 +78,8 @@ class Missions(Enum):
     busy = 7
     scuttle = 8
     blockade = 9
+    early_blockade = 10
+    misc = 11   # for use when multiple missions apply
 
 
 class Misc:
@@ -100,6 +111,18 @@ class Misc:
 
     @staticmethod
     def log_w_shid(debugging_type, log_level, id, log_message):
+        """
+        Sends a message to the log with some critical logging information taken
+        care of by the method, instead of having to throw everything into the
+        log file manually
+
+        :param debugging_type:
+        :param log_level:
+        :param id:
+        :param log_message:
+        :return:
+        """
+
         if debugging_type == 'any' or Const.DEBUGGING[debugging_type]:
             if log_level == 'debug' or log_level == 'any':
                 logging.debug(" - ship.id: " + str(id) + " " + log_message)
@@ -107,6 +130,23 @@ class Misc:
                 logging.info(" - ship.id: " + str(id) + " " + log_message)
             else:
                 raise RuntimeError("Log level specified is not implemented in myglobals.Misc.log_w_shid()")
+
+    @staticmethod
+    def set_n_log_new_dest(ship, destination):
+        """
+        Logs the value that the destination is being changed to, then changes
+        the current_assignments[id].destination value accordingly
+
+        :param ship:
+        :param destination:
+        :return:
+        """
+
+        Misc.log_w_shid('misc', 'debug', ship.id, " is now setting *destination* to " + str(destination))
+
+        Variables.current_assignments[ship.id].destination = destination
+
+        return
 
     @staticmethod
     def r_dir_choice():
@@ -131,7 +171,7 @@ class Misc:
         :return:
         """
 
-        Variables.barred_destinations.append(ship.position.directional_offset(direction))
+        Variables.considered_destinations.append(ship.position.directional_offset(direction))
 
         return
 
