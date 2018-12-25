@@ -146,15 +146,16 @@ class Nav:
 
         target_dir = Misc.is_direction_normalized(game_map, ship)
         if target_dir is None:
+            glo.Misc.loggit('core', 'debug', " -** staying still")
             return ship.stay_still()
 
         glo.Misc.loggit('core', 'debug', " -** processed results from _get_target_direction() to " + str(target_dir))
 
         if game_map[ship.position.directional_offset(target_dir)].is_occupied:
-            return ship.move(Nav.generate_profitable_offset(ship, game_map))
+            glo.Misc.loggit('core', 'debug', " -** changing course due to occupied cell")
+            return ship.move(Nav.generate_random_offset(ship, game_map))
 
-        return ship.move(game_map.naive_navigate(ship,
-                                                 glo.Variables.current_assignments[ship.id].destination))
+        return ship.move(target_dir)
 
 
 class Offense:
@@ -297,7 +298,7 @@ class Misc:
         """
         Takes the results of game_map._get_target_direction() and cleans the
         Nones out of it.  Assumes that the valid destination is packed into
-        current_assignments[ship.id].destination
+        current_assignments[ship.id].destination.
 
         :param game_map:
         :param ship:

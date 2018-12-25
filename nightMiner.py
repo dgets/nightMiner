@@ -66,7 +66,8 @@ while True:
                     if glo.Variables.early_blockade_processing and \
                             glo.Variables.current_assignments[ship.id].primary_mission == glo.Missions.early_blockade:
                         glo.Misc.log_w_shid('core', 'info', ship.id, " entering early_blockade()")
-                        c_queue_addition = seek_n_nav.Offense.early_blockade(me, ship, game, game_map, turn)
+
+                        command_queue.append(seek_n_nav.Offense.early_blockade(me, ship, game, game_map, turn))
 
                         continue
 
