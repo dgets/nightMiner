@@ -293,6 +293,9 @@ class Offense:
         ship_cntr = 0
 
         for playa in game.players:
+            if playa == me.id:
+                continue
+
             for drop_route in game.players[playa].shipyard.position.get_surrounding_cardinals():
                 # assign a ship to each
                 # for now I think we'll just do this starting with the ships
