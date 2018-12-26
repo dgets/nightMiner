@@ -32,6 +32,7 @@ class ShipHistory:
 
         :return: Boolean
         """
+
         if (self.id == -1) or (self.location is None) or (self.turnstamp == -1) or (self.primary_mission == 'nada') or \
              (self.secondary_mission == 'nada'):
             return False
@@ -45,6 +46,7 @@ class ShipHistory:
         :param me:
         :return: boolean
         """
+
         if not self.is_initialized():
             return None     # an exception would be better here
 
@@ -111,7 +113,6 @@ class ShipHistory:
         :param me:
         :return:
         """
-        # see if we've got any dead ships still recorded
 
         shids = []
 
@@ -119,7 +120,6 @@ class ShipHistory:
             glo.Misc.loggit('pruning', 'info', " - pruning current_assignments, if necessary (ship: " +
                                   str(ship_history_key) + ")")
 
-            #if not glo.Variables.current_assignments[ship_history_key].is_alive(me):
             try:
                 if me.get_ship(ship_history_key) is None:
                     # wipe entry
@@ -133,3 +133,27 @@ class ShipHistory:
                 shids.append(ship_history_key)
                 
             return shids
+
+
+class Misc:
+    """
+    Different support routines related to the ShipHistory object(s).
+    """
+
+    @staticmethod
+    def kill_dead_ships(me):
+        """
+        Determines which ships have been deceased, and removes them from the
+        current_assignments dict of ShipHistory objects.
+
+        :param me:
+        :return:
+        """
+
+        new_kill_list_additions = ShipHistory.prune_current_assignments(me)
+        glo.Misc.loggit('core', 'debug', "Killing from history due to ship 8-x: " + str(new_kill_list_additions))
+        if new_kill_list_additions is not None:
+            for shid in new_kill_list_additions:
+                # wipe away the dingleberries
+                glo.Misc.loggit('core', 'debug', "Killing history of shid: " + str(shid))
+                glo.Variables.current_assignments.pop(shid, None)
