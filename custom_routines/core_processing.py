@@ -10,10 +10,8 @@ is specifically for mining or halite dropoff in a mining specific file or,
 perhaps, seek_n_nav.py.
 """
 
-import random
-
 import hlt
-from hlt import constants, Direction, Position
+from hlt import constants
 
 from . import seek_n_nav, mining, analytics, history
 from . import myglobals as glo
@@ -145,9 +143,15 @@ class Core:
                 glo.Misc.loggit('scuttle', 'info', " - ship.id: " + str(ship.id) + " getting away from shipyard to " +
                                 glo.Variables.current_assignments[ship.id].destination)
 
-                c_queue.append(ship.move(game_map.naive_navigate(ship,
-                                                                 glo.Variables.current_assignments[ship.id].
-                                                                 destination)))
+                if not seek_n_nav.nav.check_for_potential_collision(
+                    game_map[ship.position.directional_offset(game_map.naive_navigate(ship,
+                                                              glo.Variables.current_assignments[ship.id].
+                                                              destination))]):
+                    c_queue.append(ship.move(game_map.naive_navigate(ship,
+                                                                     glo.Variables.current_assignments[ship.id].
+                                                                     destination)))
+                else:
+                    c_queue.append(ship.move(seek_n_nav.Nav.generate_profitable_offset(ship, game_map)))
 
             # elif ship.position == me.shipyard.position and \
             #         ship.halite_amount <= constants.MAX_HALITE - 100:
@@ -191,11 +195,21 @@ class Core:
                 glo.Variables.current_assignments[ship.id].turnstamp = turn
                 glo.Variables.current_assignments[ship.id].destination = me.shipyard.position
 
-                c_queue.append(ship.move(game_map.naive_navigate(ship, me.shipyard.position)))
+                if not seek_n_nav.Nav.check_for_potential_collision(
+                       game_map[ship.position.directional_offset(game_map.naive_navigate(ship, me.shipyard.position))]):
+                    c_queue.append(ship.move(game_map.naive_navigate(ship, me.shipyard.position)))
+                else:
+                    c_queue.append(ship.move(seek_n_nav.Nav.generate_profitable_offset(ship, game_map)))
+
             else:
                 # already scuttling, keep it up
                 glo.Misc.loggit('scuttle', 'info', " - ship.id: " + str(ship.id) + " en route back to drop")
-                c_queue.append(ship.move(game_map.naive_navigate(ship, me.shipyard.position)))
+
+                if not seek_n_nav.Nav.check_for_potential_collision(game_map[ship.position.directional_offset(
+                        game_map.naive_navigate(ship, me.shipyard.position))]):
+                    c_queue.append(ship.move(game_map.naive_navigate(ship, me.shipyard.position)))
+                else:
+                    c_queue.append(ship.move(seek_n_nav.Nav.generate_profitable_offset(ship, game_map)))
 
             # after we try this with naive_navigate we'll give it a shot with
             # an implementation using seek_n_nav's less_dumb_move(), as well
