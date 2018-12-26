@@ -166,4 +166,5 @@ while True:
         # command_queue = seek_n_nav.Nav.ScuttleSupport.scuttle_for_finish(me, game_map, turn)
 
     turn += 1
+    glo.Variables.considered_destinations = []
     game.end_turn(command_queue)

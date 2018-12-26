@@ -36,7 +36,7 @@ class Const:
     FEATURES = {
         'mining': True,
         'blockade': True,
-        'offense_blockade': True,
+        'ending_blockade': True,
         'scuttle': True,
         'early_blockade': False,
     }
