@@ -38,7 +38,7 @@ class Const:
         'blockade': True,
         'offense_blockade': True,
         'scuttle': True,
-        'early_blockade': True,
+        'early_blockade': False,
     }
 
     Enough_Ore_To_Spawn = 2000
