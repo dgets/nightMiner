@@ -162,7 +162,8 @@ while True:
     else:
         glo.Misc.loggit('core', 'debug', "Entered the scuttle race clause")
         # scuttle everybody home and avoid the clusterfsck by blockade or pringles
-        command_queue = seek_n_nav.Nav.ScuttleSupport.scuttle_for_finish(me, game_map, turn)
+        command_queue = core_processing.Core.scuttle_for_finish(me, game_map, turn)
+        # command_queue = seek_n_nav.Nav.ScuttleSupport.scuttle_for_finish(me, game_map, turn)
 
     turn += 1
     game.end_turn(command_queue)

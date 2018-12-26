@@ -8,8 +8,9 @@ routines for general seeking out of halite ore resources w/basic resource
 location determination and navigation to it
 """
 
+import random
 
-from hlt import Position
+from hlt import Direction
 
 from . import history, analytics
 from . import myglobals as glo
