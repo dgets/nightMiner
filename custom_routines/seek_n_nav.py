@@ -93,7 +93,8 @@ class Nav:
             # again, not sure why I'm here, but let's process for it
             return ship.stay_still()
 
-        if game_map[ship.position.directional_offset(target_dir)].is_occupied:
+        if game_map[ship.position.directional_offset(target_dir)].is_occupied or \
+                Nav.check_for_potential_collision(ship.position.directional_offset(target_dir)):
             return ship.move(Nav.generate_profitable_offset(ship, game_map))
 
         return ship.move(game_map.naive_navigate(ship, glo.Variables.current_assignments[ship.id].destination))
@@ -113,10 +114,12 @@ class Nav:
         """
 
         next_dir = analytics.NavAssist.avoid_collision_by_random_scoot(direction, ship)
-        if next_dir is not None:
-            next_dest = game_map[ship.position.directional_offset(direction)]
-
-            return ship.move(game_map.naive_navigate(ship, next_dest.position))
+        if next_dir is not None and \
+                Nav.check_for_potential_collision(game_map[ship.position.directional_offset(direction)].position):
+            return Nav.generate_profitable_offset(ship, game_map)
+        elif next_dir is not None:
+            return ship.move(game_map.naive_navigate(ship,
+                                                     game_map[ship.position.directional_offset(direction)].position))
         else:
             # I guess we'll just wait for now
             glo.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " avoiding collision at " +
@@ -192,7 +195,6 @@ class Offense:
         glo.Misc.log_w_shid('blockade', 'info', ship.id, " - entered blockade_enemy_drops()")
 
         target_syard_pos = None
-        target_syard_num = -1
         dist = game_map.width * 2 + 1  # ObDistanceBiggerThanGamesMaxDist
 
         # determine the closest shipyard
@@ -204,12 +206,20 @@ class Offense:
                 target_syard_pos = enemy_syard_pos
 
         # TODO: determine whether we need to implement random moving collision avoidance
-        if target_syard_pos is not None:
+        if target_syard_pos is not None and \
+                Nav.check_for_potential_collision(ship.position.directional_offset(
+                    game_map.naive_navigate(ship, target_syard_pos))):
+            return ship.move(Nav.generate_random_offset(ship, game_map))
+        elif target_syard_pos is not None:
             return ship.move(game_map.naive_navigate(ship, target_syard_pos))
         else:
             glo.Misc.log_w_shid('blockade', 'info', ship.id, " -* did not find enemy shipyard(s)")
 
             # TODO: remove this when we work on the pringles
+            # NOTE: not going to bother adding collision detection code here,
+            # being as this shouldn't even get utilized any more at this
+            # point, or only at the very end of game when the ship won't be
+            # changing the outcome at all, anyway
             return ship.move(game_map.naive_navigate(ship, Position(1, 1)))
 
     @staticmethod

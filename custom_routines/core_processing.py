@@ -204,7 +204,12 @@ class Core:
             else:
                 # already scuttling, keep it up
                 glo.Misc.loggit('scuttle', 'info', " - ship.id: " + str(ship.id) + " en route back to drop")
-                c_queue.append(ship.move(game_map.naive_navigate(ship, me.shipyard.position)))
+
+                if not seek_n_nav.Nav.check_for_potential_collision(game_map[ship.position.directional_offset(
+                        game_map.naive_navigate(ship, me.shipyard.position))]):
+                    c_queue.append(ship.move(game_map.naive_navigate(ship, me.shipyard.position)))
+                else:
+                    c_queue.append(ship.move(seek_n_nav.Nav.generate_profitable_offset(ship, game_map)))
 
             # after we try this with naive_navigate we'll give it a shot with
             # an implementation using seek_n_nav's less_dumb_move(), as well

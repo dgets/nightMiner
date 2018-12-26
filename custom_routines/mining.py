@@ -46,6 +46,9 @@ class Mine:
         if final_dir != Direction.Still:
             glo.Misc.add_barred_destination(final_dir, ship)
 
+            if seek_n_nav.Nav.check_for_potential_collision(ship.position.directional_offset(final_dir)):
+                return ship.move(seek_n_nav.Nav.generate_profitable_offset(ship, game_map))
+
             return ship.move(game_map.naive_navigate(ship, ship.position.directional_offset(final_dir)))
         else:
             return ship.stay_still()
