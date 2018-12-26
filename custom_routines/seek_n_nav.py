@@ -8,9 +8,7 @@ routines for general seeking out of halite ore resources w/basic resource
 location determination and navigation to it
 """
 
-import random
-
-from hlt import Direction
+from hlt import Position
 
 from . import history, analytics
 from . import myglobals as glo
@@ -157,6 +155,22 @@ class Nav:
             return ship.move(Nav.generate_random_offset(ship, game_map))
 
         return ship.move(target_dir)
+
+    @staticmethod
+    def check_for_potential_collision(considered_position):
+        """
+        Method will check glo.Variables.considered_destinations to see if the
+        considered_position in question already lives there; if it does, it
+        will return True for collision detection, else False.
+
+        :param considered_position:
+        :return: Boolean
+        """
+
+        if considered_position in glo.Variables.considered_destinations:
+            return True
+        else:
+            return False
 
 
 class Offense:
