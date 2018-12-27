@@ -1,7 +1,7 @@
 """
 myglobals.py
 
-Started on: 5nov18 (or well that's when I remembered at add this note,
+Started on: 5nov18 (or well that's when I remembered to add this note,
 anyway)
 
 Holds debugging and other constant values
@@ -11,6 +11,7 @@ import logging
 import random
 from enum import Enum
 
+import hlt
 from hlt import Direction
 
 
@@ -34,20 +35,26 @@ class Const:
     }
 
     FEATURES = {
+        'initial_scoot': True,
         'mining': True,
         'blockade': True,
         'ending_blockade': True,
         'scuttle': True,
-        'early_blockade': False,
+        'early_blockade': True,
     }
 
     Enough_Ore_To_Spawn = 2000
-    Initial_Scoot_Distance = 5
+    Initial_Scoot_Distance = 2
     Max_Chunk_Width = Initial_Scoot_Distance
     Max_Chunk_Height = Initial_Scoot_Distance
     # Max_Scuttle_Time = constants.MAX_TURNS - (Game.game_map.width * 2)
     Enemy_Drops = []
     Early_Blockade_Remainder_Ships = 4
+
+    # even if we set this wrong, we don't want to mess with early blockade
+    # if there are more than 2 players
+    if FEATURES['early_blockade'] is True and len(hlt.Game.players) > 2:
+        FEATURES['early_blockade'] = False
 
 
 class Variables:

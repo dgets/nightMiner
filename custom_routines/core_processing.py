@@ -112,7 +112,7 @@ class Core:
             return seek_n_nav.Nav.scoot(ship, game_map)
 
         # get off the pot when you're done shitting, por dios
-        elif ship.position == me.shipyard.position and ship.halite_amount == 0:
+        elif ship.position == me.shipyard.position and ship.halite_amount == 0 and glo.Const.FEATURES['initial_scoot']:
             c_queue_addition = seek_n_nav.StartUp.get_initial_minimum_distance(ship, me, game_map, turn)
             glo.Misc.log_w_shid('core', 'debug', ship.id, " - get_initial_minimum_distance() returning: " +
                                 str(c_queue_addition))
