@@ -37,6 +37,12 @@ class Core:
 
         glo.Misc.loggit('any', 'info', "Hatched and swimming! Player ID is {}.".format(game.my_id))
 
+        # even if we set this wrong, we don't want to mess with early blockade
+        # if there are more than 2 players (this is one of the reasons that
+        # they're pseudo-constants
+        if glo.Const.FEATURES['early_blockade'] is True and len(game.players) > 2:
+            glo.Const.FEATURES['early_blockade'] = False
+
         if glo.Const.FEATURES['blockade'] or glo.Const.FEATURES['early_blockade']:
             analytics.Offense.scan_for_enemy_shipyards(game)
 

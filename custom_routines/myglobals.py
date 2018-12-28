@@ -11,13 +11,12 @@ import logging
 import random
 from enum import Enum
 
-import hlt
 from hlt import Direction
 
 
 class Const:
     """
-    global constants
+    global pseudo-constants
     """
 
     DEBUGGING = {
@@ -37,24 +36,19 @@ class Const:
     FEATURES = {
         'initial_scoot': True,
         'mining': True,
-        'blockade': True,
+        'blockade': True,   # this is redundant, but at some point we can use
+                            # it to control both types, I guess?
         'ending_blockade': True,
         'scuttle': True,
-        'early_blockade': True,
+        'early_blockade': False,
     }
 
-    Enough_Ore_To_Spawn = 2000
-    Initial_Scoot_Distance = 2
+    Enough_Ore_To_Spawn = 1001
+    Initial_Scoot_Distance = 5
     Max_Chunk_Width = Initial_Scoot_Distance
     Max_Chunk_Height = Initial_Scoot_Distance
-    # Max_Scuttle_Time = constants.MAX_TURNS - (Game.game_map.width * 2)
     Enemy_Drops = []
     Early_Blockade_Remainder_Ships = 4
-
-    # even if we set this wrong, we don't want to mess with early blockade
-    # if there are more than 2 players
-    if FEATURES['early_blockade'] is True and len(hlt.Game.players) > 2:
-        FEATURES['early_blockade'] = False
 
 
 class Variables:
