@@ -66,7 +66,7 @@ class Nav:
         glo.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) +
                         " **returning to shipyard** at " + str(me.shipyard.position))
 
-        glo.Variables.current_assignments[ship.id].set_ldps(ship.location, me.shipyard.position, glo.Missions.dropoff,
+        glo.Variables.current_assignments[ship.id].set_ldps(ship.position, me.shipyard.position, glo.Missions.dropoff,
                                                             glo.Missions.in_transit)
         glo.Variables.current_assignments[ship.id].turnstamp = turn
 

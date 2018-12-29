@@ -81,15 +81,15 @@ class ShipHistory:
         self.location = loc
 
         if dest is not self.destination:
-            glo.Misc.loggit('misc', 'info', " -* changing destination to " + str(dest))
+            glo.Misc.loggit('any', 'info', " -* changing destination to " + str(dest))
             self.destination = dest
 
         if pri is not self.primary_mission:
-            glo.Misc.loggit('misc', 'info', " -* changing primary mission to " + str(pri))
+            glo.Misc.loggit('any', 'info', " -* changing primary mission to " + str(pri))
             self.primary_mission = pri
 
         if sec is not self.secondary_mission:
-            glo.Misc.loggit('misc', 'info', " -* changing secondary mission to " + str(sec))
+            glo.Misc.loggit('any', 'info', " -* changing secondary mission to " + str(sec))
             self.secondary_mission = sec
 
     def set_loc(self, loc):
