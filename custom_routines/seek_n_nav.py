@@ -66,9 +66,8 @@ class Nav:
         glo.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) +
                         " **returning to shipyard** at " + str(me.shipyard.position))
 
-        glo.Variables.current_assignments[ship.id].primary_mission = glo.Missions.dropoff
-        glo.Variables.current_assignments[ship.id].secondary_mission = glo.Missions.in_transit
-        glo.Variables.current_assignments[ship.id].destination = me.shipyard.position
+        glo.Variables.current_assignments[ship.id].set_ldps(ship.location, me.shipyard.position, glo.Missions.dropoff,
+                                                            glo.Missions.in_transit)
         glo.Variables.current_assignments[ship.id].turnstamp = turn
 
         if (ship.position in glo.Variables.current_assignments[ship.id].destination.get_surrounding_cardinals()) and \
@@ -122,8 +121,6 @@ class Nav:
             # I guess we'll just wait for now
             glo.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " avoiding collision at " +
                             str(ship.position))
-            # no, we're gonna try to not use stay_still() any more
-            # return ship.stay_still()
 
             return ship.move(Nav.generate_profitable_offset(ship, game_map))
 
@@ -141,8 +138,6 @@ class Nav:
                         str(glo.Variables.current_assignments[ship.id].destination))
 
         glo.Misc.loggit('core', 'debug', " -* ship's current position: " + str(ship.position))
-        # glo.Misc.loggit('core', 'debug', " -* destination: " +    # this is covered above in the 'scoot' log stmt
-        #                str(glo.Variables.current_assignments[ship.id].destination))
 
         target_dir = Misc.is_direction_normalized(game_map, ship)
         if target_dir is None:
@@ -228,7 +223,7 @@ class Offense:
             glo.Variables.current_assignments[ship.id].set_ldps(ship.position, me.shipyard.position,
                                                                 glo.Missions.dropoff, glo.Missions.in_transit)
 
-            return ship.move(game_map.naive_navigate(me.shipyard.position)
+            return ship.move(game_map.naive_navigate(me.shipyard.position))
 
     @staticmethod
     def early_blockade(me, ship, game, game_map, turn):
