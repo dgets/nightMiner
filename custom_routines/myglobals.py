@@ -138,6 +138,8 @@ class Misc:
         Logs the value that the destination is being changed to, then changes
         the current_assignments[id].destination value accordingly
 
+        NOTE: This is now deprecated.
+
         :param ship:
         :param destination:
         :return:

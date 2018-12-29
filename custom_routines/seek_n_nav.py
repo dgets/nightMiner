@@ -8,8 +8,6 @@ routines for general seeking out of halite ore resources w/basic resource
 location determination and navigation to it
 """
 
-from hlt import Position
-
 from . import history, analytics
 from . import myglobals as glo
 
@@ -189,6 +187,7 @@ class Offense:
 
         :param ship:
         :param game_map:
+        :param me:
         :return: command_queue addition
         """
 
@@ -209,8 +208,14 @@ class Offense:
         if target_syard_pos is not None and \
                 Nav.check_for_potential_collision(ship.position.directional_offset(
                     game_map.naive_navigate(ship, target_syard_pos))):
+            glo.Variables.current_assignments[ship.id].set_ldps(ship.position, target_syard_pos,
+                                                                glo.Missions.early_blockade, glo.Missions.in_transit)
+
             return ship.move(Nav.generate_random_offset(ship, game_map))
         elif target_syard_pos is not None:
+            glo.Variables.current_assignments[ship.id].set_ldps(ship.position, target_syard_pos,
+                                                                glo.Missions.early_blockade, glo.Missions.in_transit)
+
             return ship.move(game_map.naive_navigate(ship, target_syard_pos))
         else:
             glo.Misc.log_w_shid('blockade', 'info', ship.id, " -* did not find enemy shipyard(s)")
@@ -220,7 +225,10 @@ class Offense:
             # being as this shouldn't even get utilized any more at this
             # point, or only at the very end of game when the ship won't be
             # changing the outcome at all, anyway
-            return ship.move(game_map.naive_navigate(ship, Position(1, 1)))
+            glo.Variables.current_assignments[ship.id].set_ldps(ship.position, me.shipyard.position,
+                                                                glo.Missions.dropoff, glo.Missions.in_transit)
+
+            return ship.move(game_map.naive_navigate(me.shipyard.position)
 
     @staticmethod
     def early_blockade(me, ship, game, game_map, turn):

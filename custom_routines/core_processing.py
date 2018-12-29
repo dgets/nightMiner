@@ -162,44 +162,15 @@ class Core:
             # elif ship.position == me.shipyard.position and \
             #         ship.halite_amount <= constants.MAX_HALITE - 100:
             elif ship.halite_amount <= 350:
-                # glo.Variables.current_assignments[ship.id].primary_mission != glo.Missions.get_distance:
-
-                # get away from the drop
-                # glo.Misc.loggit('scuttle', 'info', " - ship.id: " + str(ship.id) + " setting get_distance from " +
-                #                       "shipyard")
-                # glo.Variables.current_assignments[ship.id].primary_mission = glo.Missions.get_distance
-
                 # go blockade
                 c_queue.append(seek_n_nav.Offense.blockade_enemy_drops(ship, game_map, me))
-
-                glo.Variables.current_assignments[ship.id].primary_mission = glo.Missions.blockade
-                glo.Variables.current_assignments[ship.id].secondary_mission = glo.Missions.in_transit
-                glo.Variables.current_assignments[ship.id].turnstamp = turn
-
-                # tmp_destination = seek_n_nav.Nav.generate_profitable_offset(ship, game_map)
-                # while ship.position.directional_offset(tmp_destination) == me.shipyard.position:
-                #     tmp_destination = seek_n_nav.Nav.profitable_profitable_offset(ship.position, game_map)
-                # glo.Variables.current_assignments[ship.id].destination = \
-                #     ship.position.directional_offset(tmp_destination)
-
-                # c_queue.append(ship.move(game_map.naive_navigate(ship,
-                #                                                  glo.Variables.current_assignments[ship.id].
-                #                                                  destination)))
-
-                # c_queue.append(ship.move(game_map.naive_navigate(ship, Position(0, 0))))
-
-                # if (turn % 2) == 1:
-                #     c_queue.append(ship.move(Direction.North))
-                # else:
-                #     c_queue.append(ship.move(Direction.East))
 
             elif glo.Variables.current_assignments[ship.id].primary_mission != glo.Missions.scuttle:
                 glo.Misc.loggit('scuttle', 'info', " - ship.id: " + str(ship.id) + " heading back to drop")
                 # head back to the drop, it's scuttle time
-                glo.Variables.current_assignments[ship.id].primary_mission = glo.Missions.scuttle
-                glo.Variables.current_assignments[ship.id].secondary_mission = glo.Missions.in_transit
-                glo.Variables.current_assignments[ship.id].turnstamp = turn
-                glo.Variables.current_assignments[ship.id].destination = me.shipyard.position
+                glo.Variables.current_assignments[ship.id].set_ldps(ship.position, me.shipyard.position,
+                                                                    glo.Missions.scuttle,
+                                                                    glo.Missions.in_transit)
 
                 if not seek_n_nav.Nav.check_for_potential_collision(
                        game_map[ship.position.directional_offset(game_map.naive_navigate(ship, me.shipyard.position))]):

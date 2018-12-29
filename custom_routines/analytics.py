@@ -68,9 +68,9 @@ class MapChunk:
                     # is it mine?
                     try:
                         for drop in dropoffs:
-                            if drop.owner == me.id and (drop.position.x >= self.x_start and
-                                  drop.position.x < (self.x_start + self.Width) and (drop.position.y >= self.y_start
-                                  and drop.position.y < self.y_start + self.Height)):
+                            if drop.owner == me.id and drop.position.x >= self.x_start and \
+                                  drop.position.x < self.x_start + self.Width and drop.position.y >= self.y_start \
+                                  and drop.position.y < self.y_start + self.Height:
                                 # we have a drop
                                 self.has_dropoff = True
                                 break
@@ -247,9 +247,6 @@ class NavAssist:
         :return:
         """
 
-        # if game_map[ship.position.directional_offset(
-        #         game_map._get_target_direction(ship.position,
-        #                                        glo.Variables.current_assignments[ship.id].destination))].is_occupied:
         for test_dir in game_map[ship.position].position.get_surrounding_cardinals():
             if game_map[test_dir].is_occupied:
                 game_map[test_dir].mark_unsafe(ship)
@@ -285,16 +282,19 @@ class Offense:
         :param game:
         :return:
         """
+
         # identify map data for Const storage and later retrieval
         glo.Misc.loggit('preprocessing', 'info', "Scanning for enemy shipyards")
 
         # this is a whole lot easier
+        tot_game_players = 0
         for player in game.players.values():
             if player is not game.me:
                 glo.Misc.loggit('preprocessing', 'debug', " - found shipyard @ " +
                                 str(player.shipyard) + " belonging to player: " + str(player.id))
 
                 glo.Const.Enemy_Drops.append(player.shipyard.position)
+                tot_game_players += 1
 
         # 4 ships per shipyard; this is an expensive maneuver; probably only
         # viable in 2 player games
@@ -304,12 +304,17 @@ class Offense:
             # want to make sure that we're not 'spending' ships that are too
             # far away or too full of halite prior to a drop
             for pathway_dir in Direction.get_all_cardinals():    # four ships per drop
-                glo.Misc.set_n_log_new_dest(blockade_ship,
-                                            glo.Const.Enemy_Drops[tot_cntr].get_directional_offset(pathway_dir))
-                glo.Variables.current_assignments[blockade_ship.id].primary_mission = glo.Missions.early_blockade
-                glo.Variables.current_assignments[blockade_ship.id].secondary_mission = glo.Missions.in_transit
+                # glo.Misc.set_n_log_new_dest(blockade_ship,
+                #                             glo.Const.Enemy_Drops[tot_cntr].get_directional_offset(pathway_dir))
+                glo.Variables.current_assignments[blockade_ship.id].set_ldps(blockade_ship.position,
+                                                                             glo.Const.Enemy_drops[tot_cntr].
+                                                                                get_directional_offset(pathway_dir),
+                                                                             glo.Missions.early_blockade,
+                                                                             glo.Missions.in_transit)
 
             tot_cntr += 1
+            if tot_cntr > tot_game_players * 4:
+                continue
 
         glo.Variables.early_blockade_initialized = True
 

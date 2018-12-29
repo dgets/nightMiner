@@ -151,10 +151,6 @@ while True:
                                                                                                            game_map)),
                                                                                      turn, glo.Missions.mining,
                                                                                      glo.Missions.in_transit)
-                    # glo.Variables.current_assignments[ship.id].primary_mission = glo.Missions.mining
-                    # glo.Variables.current_assignments[ship.id].secondary_mission = glo.Missions.in_transit
-                    # glo.Variables.current_assignments[ship.id].destination = \
-                    #     ship.position.directional_offset(analytics.HaliteAnalysis.find_best_dir(ship, game_map))
 
                     if not ship.position.directional_offset(analytics.HaliteAnalysis.find_best_dir(ship, game_map)) in \
                            glo.Variables.considered_destinations:
