@@ -188,7 +188,4 @@ class Core:
                 else:
                     c_queue.append(ship.move(seek_n_nav.Nav.generate_profitable_offset(ship, game_map)))
 
-            # after we try this with naive_navigate we'll give it a shot with
-            # an implementation using seek_n_nav's less_dumb_move(), as well
-
         return c_queue

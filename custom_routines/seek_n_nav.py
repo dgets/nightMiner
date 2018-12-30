@@ -295,11 +295,12 @@ class StartUp:
                                                                          inc_pos, turn, glo.Missions.mining,
                                                                          glo.Missions.in_transit)
 
-        tmp_destination_dir = analytics.NavAssist.avoid_collision_by_random_scoot(tmp_destination_dir, ship)
+        # tmp_destination_dir = analytics.NavAssist.avoid_collision_by_random_scoot(tmp_destination_dir, ship)
         if tmp_destination_dir is None:
             return ship.stay_still()
         else:
-            return Nav.less_dumb_move(ship, tmp_destination_dir, game_map)
+            # return Nav.less_dumb_move(ship, tmp_destination_dir, game_map)
+            return ship.move(Nav.generate_profitable_offset(ship, game_map))
 
 
 class Misc:

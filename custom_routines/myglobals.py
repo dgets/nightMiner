@@ -20,14 +20,14 @@ class Const:
     """
 
     DEBUGGING = {
-        'preprocessing': True,
-        'core': True,
+        'preprocessing': False,
+        'core': False,
         'seek': False,
         'locate_ore': False,
         'perimeter_search': False,  # this will almost certainly be phased out
         'save_state': False,
         'pruning': False,
-        'scuttle': True,
+        'scuttle': False,
         'blockade': True,
         'early_blockade': True,
         'misc_processing': True,
