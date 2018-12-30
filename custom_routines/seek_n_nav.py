@@ -97,34 +97,6 @@ class Nav:
         return ship.move(game_map.naive_navigate(ship, glo.Variables.current_assignments[ship.id].destination))
 
     @staticmethod
-    def less_dumb_move(ship, direction, game_map):
-        """
-        Moves into the cell in the direction given, if not occupied, or else
-        waits for a turn in order to avoid collision
-
-        TODO: see if this is ready for complete deprecation and then remove
-
-        :param ship:
-        :param direction:
-        :param game_map:
-        :return:
-        """
-
-        next_dir = analytics.NavAssist.avoid_collision_by_random_scoot(direction, ship)
-        if next_dir is not None and \
-                Nav.check_for_potential_collision(game_map[ship.position.directional_offset(direction)].position):
-            return Nav.generate_profitable_offset(ship, game_map)
-        elif next_dir is not None:
-            return ship.move(game_map.naive_navigate(ship,
-                                                     game_map[ship.position.directional_offset(direction)].position))
-        else:
-            # I guess we'll just wait for now
-            glo.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " avoiding collision at " +
-                            str(ship.position))
-
-            return ship.move(Nav.generate_profitable_offset(ship, game_map))
-
-    @staticmethod
     def scoot(ship, game_map):
         """
         In transit to a destination; just another step on the way.
