@@ -374,11 +374,10 @@ class Offense:
                 glo.Misc.log_w_shid('early_blockade', 'debug', sorted_ships[ship_cntr].id,
                                     " - setting destination to :" + str(drop_route))
 
-                glo.Variables.current_assignments[sorted_ships[ship_cntr].id].destination = drop_route
-                glo.Variables.current_assignments[sorted_ships[ship_cntr].id].primary_mission = \
-                    glo.Missions.early_blockade
-                glo.Variables.current_assignments[sorted_ships[ship_cntr].id].secondary_mission = \
-                    glo.Missions.in_transit
+                glo.Variables.current_assignments[sorted_ships[ship_cntr].id].set_ldps(sorted_ships[ship_cntr].position,
+                                                                                       drop_route,
+                                                                                       glo.Missions.early_blockade,
+                                                                                       glo.Missions.in_transit)
                 glo.Variables.current_assignments[sorted_ships[ship_cntr].id].turnstamp = turn
 
                 ship_cntr += 1
@@ -423,5 +422,4 @@ class Offense:
                         all_ships[cntr2 - 1] = tmp_ship
 
         return all_ships
-
 
