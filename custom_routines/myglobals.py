@@ -1,7 +1,7 @@
 """
 myglobals.py
 
-Started on: 5nov18 (or well that's when I remembered at add this note,
+Started on: 5nov18 (or well that's when I remembered to add this note,
 anyway)
 
 Holds debugging and other constant values
@@ -16,36 +16,37 @@ from hlt import Direction
 
 class Const:
     """
-    global constants
+    global pseudo-constants
     """
 
     DEBUGGING = {
-        'preprocessing': True,
-        'core': True,
+        'preprocessing': False,
+        'core': False,
         'seek': False,
         'locate_ore': False,
         'perimeter_search': False,  # this will almost certainly be phased out
         'save_state': False,
         'pruning': False,
-        'scuttle': True,
+        'scuttle': False,
         'blockade': True,
         'early_blockade': True,
         'misc_processing': True,
     }
 
     FEATURES = {
+        'initial_scoot': True,
         'mining': True,
-        'blockade': True,
-        'offense_blockade': True,
+        'blockade': True,   # this is redundant, but at some point we can use
+                            # it to control both types, I guess?
+        'ending_blockade': True,
         'scuttle': True,
         'early_blockade': False,
     }
 
-    Enough_Ore_To_Spawn = 2000
+    Enough_Ore_To_Spawn = 1001
     Initial_Scoot_Distance = 5
     Max_Chunk_Width = Initial_Scoot_Distance
     Max_Chunk_Height = Initial_Scoot_Distance
-    # Max_Scuttle_Time = constants.MAX_TURNS - (Game.game_map.width * 2)
     Enemy_Drops = []
     Early_Blockade_Remainder_Ships = 4
 
@@ -136,6 +137,8 @@ class Misc:
         """
         Logs the value that the destination is being changed to, then changes
         the current_assignments[id].destination value accordingly
+
+        NOTE: This is now deprecated.
 
         :param ship:
         :param destination:

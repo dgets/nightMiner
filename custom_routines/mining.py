@@ -26,7 +26,7 @@ class Mine:
         :param ship:
         :param game_map:
         :param turn:
-        :return: seek_n_nav.Nav.less_dumb_move() command
+        :return:
         """
 
         glo.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) + " **randomly wandering**")

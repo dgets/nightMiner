@@ -139,10 +139,31 @@ while True:
                     continue
 
             except KeyError:
-                # set everybody to mining (after getting distance), first of all
-                command_queue.append(seek_n_nav.StartUp.get_initial_minimum_distance(ship, me, game_map, turn))
+                if glo.Const.FEATURES['initial_scoot']:
+                    # set everybody to mining (after getting distance), first of all
+                    command_queue.append(seek_n_nav.StartUp.get_initial_minimum_distance(ship, me, game_map, turn))
+                    tmp_msg = " for initial_scoot"
+                else:
+                    glo.Variables.current_assignments[ship.id] = history.ShipHistory(ship.id, ship.position,
+                                                                                     ship.position.directional_offset(
+                                                                                         analytics.HaliteAnalysis.
+                                                                                             find_best_dir(ship,
+                                                                                                           game_map)),
+                                                                                     turn, glo.Missions.mining,
+                                                                                     glo.Missions.in_transit)
 
-            glo.Misc.loggit('core', 'debug', " - found and processed ship: " + str(ship.id))
+                    if not ship.position.directional_offset(analytics.HaliteAnalysis.find_best_dir(ship, game_map)) in \
+                           glo.Variables.considered_destinations:
+                        glo.Variables.considered_destinations.append(
+                            ship.position.directional_offset(analytics.HaliteAnalysis.find_best_dir(ship, game_map)))
+
+                        command_queue.append(seek_n_nav.Nav.scoot(ship, game_map))
+                    else:
+                        command_queue.append(seek_n_nav.Nav.generate_profitable_offset(ship, game_map))
+
+                    tmp_msg = " for immediate mining"
+
+            glo.Misc.loggit('core', 'debug', " - found and processed ship: " + str(ship.id) + tmp_msg)
 
         if turn <= 250 and me.halite_amount >= glo.Const.Enough_Ore_To_Spawn  \
                 and not game_map[me.shipyard].is_occupied:
@@ -166,4 +187,5 @@ while True:
         # command_queue = seek_n_nav.Nav.ScuttleSupport.scuttle_for_finish(me, game_map, turn)
 
     turn += 1
+    glo.Variables.considered_destinations = []
     game.end_turn(command_queue)

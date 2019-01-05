@@ -8,8 +8,6 @@ routines for general seeking out of halite ore resources w/basic resource
 location determination and navigation to it
 """
 
-from hlt import Position
-
 from . import history, analytics
 from . import myglobals as glo
 
@@ -68,9 +66,8 @@ class Nav:
         glo.Misc.loggit('core', 'info', " - ship.id: " + str(ship.id) +
                         " **returning to shipyard** at " + str(me.shipyard.position))
 
-        glo.Variables.current_assignments[ship.id].primary_mission = glo.Missions.dropoff
-        glo.Variables.current_assignments[ship.id].secondary_mission = glo.Missions.in_transit
-        glo.Variables.current_assignments[ship.id].destination = me.shipyard.position
+        glo.Variables.current_assignments[ship.id].set_ldps(ship.position, me.shipyard.position, glo.Missions.dropoff,
+                                                            glo.Missions.in_transit)
         glo.Variables.current_assignments[ship.id].turnstamp = turn
 
         if (ship.position in glo.Variables.current_assignments[ship.id].destination.get_surrounding_cardinals()) and \
@@ -100,36 +97,6 @@ class Nav:
         return ship.move(game_map.naive_navigate(ship, glo.Variables.current_assignments[ship.id].destination))
 
     @staticmethod
-    def less_dumb_move(ship, direction, game_map):
-        """
-        Moves into the cell in the direction given, if not occupied, or else
-        waits for a turn in order to avoid collision
-
-        TODO: see if this is ready for complete deprecation and then remove
-
-        :param ship:
-        :param direction:
-        :param game_map:
-        :return:
-        """
-
-        next_dir = analytics.NavAssist.avoid_collision_by_random_scoot(direction, ship)
-        if next_dir is not None and \
-                Nav.check_for_potential_collision(game_map[ship.position.directional_offset(direction)].position):
-            return Nav.generate_profitable_offset(ship, game_map)
-        elif next_dir is not None:
-            return ship.move(game_map.naive_navigate(ship,
-                                                     game_map[ship.position.directional_offset(direction)].position))
-        else:
-            # I guess we'll just wait for now
-            glo.Misc.loggit('core', 'info', " -* ship.id: " + str(ship.id) + " avoiding collision at " +
-                            str(ship.position))
-            # no, we're gonna try to not use stay_still() any more
-            # return ship.stay_still()
-
-            return ship.move(Nav.generate_profitable_offset(ship, game_map))
-
-    @staticmethod
     def scoot(ship, game_map):
         """
         In transit to a destination; just another step on the way.
@@ -143,8 +110,6 @@ class Nav:
                         str(glo.Variables.current_assignments[ship.id].destination))
 
         glo.Misc.loggit('core', 'debug', " -* ship's current position: " + str(ship.position))
-        # glo.Misc.loggit('core', 'debug', " -* destination: " +    # this is covered above in the 'scoot' log stmt
-        #                str(glo.Variables.current_assignments[ship.id].destination))
 
         target_dir = Misc.is_direction_normalized(game_map, ship)
         if target_dir is None:
@@ -189,6 +154,7 @@ class Offense:
 
         :param ship:
         :param game_map:
+        :param me:
         :return: command_queue addition
         """
 
@@ -209,8 +175,14 @@ class Offense:
         if target_syard_pos is not None and \
                 Nav.check_for_potential_collision(ship.position.directional_offset(
                     game_map.naive_navigate(ship, target_syard_pos))):
+            glo.Variables.current_assignments[ship.id].set_ldps(ship.position, target_syard_pos,
+                                                                glo.Missions.early_blockade, glo.Missions.in_transit)
+
             return ship.move(Nav.generate_random_offset(ship, game_map))
         elif target_syard_pos is not None:
+            glo.Variables.current_assignments[ship.id].set_ldps(ship.position, target_syard_pos,
+                                                                glo.Missions.early_blockade, glo.Missions.in_transit)
+
             return ship.move(game_map.naive_navigate(ship, target_syard_pos))
         else:
             glo.Misc.log_w_shid('blockade', 'info', ship.id, " -* did not find enemy shipyard(s)")
@@ -220,7 +192,10 @@ class Offense:
             # being as this shouldn't even get utilized any more at this
             # point, or only at the very end of game when the ship won't be
             # changing the outcome at all, anyway
-            return ship.move(game_map.naive_navigate(ship, Position(1, 1)))
+            glo.Variables.current_assignments[ship.id].set_ldps(ship.position, me.shipyard.position,
+                                                                glo.Missions.dropoff, glo.Missions.in_transit)
+
+            return ship.move(game_map.naive_navigate(me.shipyard.position))
 
     @staticmethod
     def early_blockade(me, ship, game, game_map, turn):
@@ -292,11 +267,12 @@ class StartUp:
                                                                          inc_pos, turn, glo.Missions.mining,
                                                                          glo.Missions.in_transit)
 
-        tmp_destination_dir = analytics.NavAssist.avoid_collision_by_random_scoot(tmp_destination_dir, ship)
+        # tmp_destination_dir = analytics.NavAssist.avoid_collision_by_random_scoot(tmp_destination_dir, ship)
         if tmp_destination_dir is None:
             return ship.stay_still()
         else:
-            return Nav.less_dumb_move(ship, tmp_destination_dir, game_map)
+            # return Nav.less_dumb_move(ship, tmp_destination_dir, game_map)
+            return ship.move(Nav.generate_profitable_offset(ship, game_map))
 
 
 class Misc:
